@@ -1,0 +1,68 @@
+# Locate OFV
+# This module defines
+# OFV_FOUND, if false, do not try to link to OFV
+# OFV_INCLUDE_DIR, where to find the headers
+
+
+SET(OFV_DIR $ENV{OFV_ROOT})
+IF(OFV_DIR)
+  FILE(TO_CMAKE_PATH ${OFV_DIR} OFV_DIR)
+ENDIF(OFV_DIR)
+
+FIND_PATH(OFV_DIR include/OFV/GMApp/Export.h
+    PATHS
+      ${CMAKE_SOURCE_DIR}
+      ${CMAKE_SOURCE_DIR}/../OFV
+    $ENV{OFV_ROOT}
+    /usr/local
+    /usr
+    /sw # Fink
+    /opt/local # DarwinPorts
+    /opt/csw # Blastwave
+    /opt
+)
+
+FIND_PATH(OFV_INCLUDE_DIR NAMES OFV/GMApp/Export.h PATH_SUFFIXES include inc
+    PATHS
+    ${OFV_DIR}
+    NO_DEFAULT_PATH
+)
+
+FIND_FILE(OFV_LIB_DIR NAMES lib
+    PATHS
+    ${OFV_DIR}
+    NO_DEFAULT_PATH
+)
+
+
+SET(OFV OFV)
+SET(OFVGM_LIBRARY OFVGMApp)
+
+
+IF (WIN32)
+SET(OFV_DEBUG OFVd)
+SET(OFVGM_LIBRARY_DEBUG OFVGMAppd)
+ENDIF (WIN32)
+
+#IF(${CMAKE_SIZEOF_VOID_P} EQUAL 8)
+#	SET(WIN64 1)
+#ENDIF(${CMAKE_SIZEOF_VOID_P} EQUAL 8)
+
+IF(WIN64)
+FIND_PATH(OFV_EXT_DIR NAMES inc
+    PATHS
+    ${OFV_DIR}/ext/VS2010/x64
+    NO_DEFAULT_PATH
+)
+ELSE(WIN64)
+FIND_PATH(OFV_EXT_DIR NAMES inc include
+    PATHS
+    ${OFV_DIR}/ext/VS2008/win32
+    NO_DEFAULT_PATH
+)
+ENDIF(WIN64)
+
+SET(OFV_FOUND "NO")
+IF(OFV_INCLUDE_DIR AND OFV_LIB_DIR)
+    SET(OFV_FOUND "YES")
+ENDIF(OFV_INCLUDE_DIR AND OFV_LIB_DIR)
