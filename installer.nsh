@@ -3,11 +3,6 @@
 ;Also Orignally based on Delta3d installer and SceneWorks installer
 ;Written by John Goforth
 
-;;;;;;;;;;;;;;;;; HOW TO RELEASE JECP ;;;;;;;;;;;;;;;;;;
-; 1. Make sure file/dir exclusion list (/x) is up to date in this file.
-; 2. VERSION, and "Name" variable
-; 3. Update #define at top of MainWindow.cpp
-; 4. Check SimCore weathercomponent to see whether time is disabled.
 
 ; Include paths found by CMake
 ; Anything that needs to be installed from our development release
@@ -114,7 +109,7 @@ Section "OFV Software" SecAll
    File ${EXCLUDES} ${DELTA_DIR}\bin\*dt*.dll
    File ${EXCLUDES} ${DELTA_DIR}\ext\bin\*.dll
    File ${DELTA_DIR}\ext\bin\cal3d.dll   ;previous cmd forgot this one
-   ;extra tools
+  ;extra tools
    File ${EXCLUDES} ${DELTA_DIR}\ext\OpenSceneGraph-2.8.5-VS9.0.30729-x86-release-12493\bin\osgconv.exe
    File ${EXCLUDES} ${DELTA_DIR}\ext\OpenSceneGraph-2.8.5-VS9.0.30729-x86-release-12493\bin\osgviewer.exe
 ;   File ${EXCLUDES} ${DELTA_DIR}\..\gdal-1.9.2\bin\gdal\apps\gdal_translate.exe
