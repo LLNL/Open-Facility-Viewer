@@ -11,15 +11,17 @@ Currently you must provide this. There are many examples in the Delta3D project.
 
 ### How to Build:
 
-* Fully tested with Visual Studio 2008 service pack 1
+* Fully tested with Visual Studio 2015 64-bit
 
-* Requires CMake 2.6.4 for build system
+* Requires CMake 2.8.12 for build system
 
 Dependencies:
-- Delta3D v2.7.4 (tested on trunk rev 8551)
-- Qt 4.7.3
+- Delta3D v2.8 (64 bit build - see ext/ for patch)
+- Qt 4.7.3 (64 bit build)
 
-Delta3D has many dependencies. Get the matching Delta3D 2.7.4 dependency builds (for VS2008 win32) at http://svn.code.sf.net/p/delta3d-extras/code/ExtDep/releases/  (REV 3596)
+Delta3D has many dependencies. Get the matching Delta3D 2.8 dependency builds here:
+https://sourceforge.net/projects/delta3d/files/delta3d-dependencies/2.9.0/Windows/delta3d-2.9.0-ext-msvc14.0.zip/download
+
 
 ====================================
 
@@ -27,9 +29,3 @@ Delta3D has many dependencies. Get the matching Delta3D 2.7.4 dependency builds 
 
 Add Open-Facility-Viewer/bin to your path. Run OFV.exe from the Open-Facility-Viewer directory. Do not run from bin directory, the project assets (data) will not be found.
 
-====================================
-
-
-### TODO:
-
-- Needs to be tested/upgraded to Delta3d 2.8 RC1
