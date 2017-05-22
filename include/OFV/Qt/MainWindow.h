@@ -84,21 +84,63 @@ public:
 	virtual ~MainWindow();
 
    void SetGraphicsWidget(QWidget* graphics);
+   void closeEvent(QCloseEvent* e);
 
  public slots:
    void OnFileLoaded(bool valid);
 
 signals:
    void LoadFile(const QString& filename);
- 
+   void toggleVisibility(const QString &actorName, bool visible);
+   void jumpTo(double x, double y, double z, double h, double p, double r);
+   void appShutDown();
+
 private slots:
-   //auto-generated slots
+   //auto-generated slots 
    void on_actionOpen_triggered();
    void on_actionAbout_triggered();
    void on_actionControls_triggered();
+   void on_actionFlying_Arrows_triggered();   
+   void on_actionACB_Flow_Arrows_triggered();
+   void on_actionBuilding_Signs_triggered();
+   void on_actionSecurity_Signs_triggered();
+   void on_actionTowers_and_Fence_triggered();
+	void on_action1_Shapash_Facility_Entrance_triggered();
+	void on_action2_Storage_Bunker_triggered();
+	void on_action3_Research_Reactor_triggered();
+	void on_action4_Reactor_Hall_triggered();
+	void on_action5_Fuel_Fabrication_Building_triggered();
+	void on_action6_Fuel_Fabrication_Pin_Assembly_Area_triggered();
+	void on_action7_Fuel_Fabrication_Building_Mezzanine_triggered();
+	void on_action8_Fuel_Fabrication_Building_Basement_triggered();
+	void on_action9_Access_Control_Building_triggered();
+	void on_action10_Special_Response_Team_Area_triggered();
+	void on_action11_Central_Alarm_Station_triggered();
+	void on_action12_Scrapyard_triggered();
+	void on_action13_Radioactive_Waste_Site_triggered();
+	void on_actionNavigation_Map_triggered();
+
+	void on_actionFuel_Assemblies_triggered();
+	void on_actionHot_Waste_triggered();
+	void on_actionIrradiated_Fuel_Pins_triggered();
+	void on_actionLiquid_Effluent_triggered();
+	void on_actionExperimental_Materials_triggered();
+	void on_actionNuclear_Waste_Drums_triggered();
+	void on_actionResearch_Waste_triggered();
+	void on_actionSolid_Waste_triggered();
+	void on_actionUranium_Oxide_Powders_triggered();
+	void on_actionUranium_Samples_triggered();
+	void on_actionAll_triggered();
+	void on_actionAll_Off_triggered();
+
+	
+
 private:
   Ui::MainWindow ui; 
 
   QFileInfo* mLastMapInfo;
+  void refreshArrows();
+  void checkAllArrows(bool check);
+
 };
 #endif // MainWindow_h__

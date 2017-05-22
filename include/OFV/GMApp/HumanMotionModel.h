@@ -64,358 +64,397 @@
 //////////////////////////////////////////////////////////////////////
 #include <dtCore/base.h>
 #include <dtCore/motionmodel.h>
+#include <dtCore/fpscollider.h>
 
 namespace dtCore
 {
-   //forward declaration
-   class Scene;
-   class Keyboard;
-   class Mouse;
-   class LogicalInputDevice;
-   class ButtonAxisToAxis;
-   class Axis;
-   class ButtonsToAxis;
-   class LogicalAxis;
-   class Isector;
+	//forward declaration
+	class Scene;
+	class Keyboard;
+	class Mouse;
+	class LogicalInputDevice;
+	class ButtonAxisToAxis;
+	class Axis;
+	class ButtonsToAxis;
+	class LogicalAxis;
+	class Isector;
 }
-   /**
-    * A motion model that simulates the action of walking or driving.
-    */
-   class HumanMotionModel : public dtCore::MotionModel
-   {
-      DECLARE_MANAGEMENT_LAYER(HumanMotionModel)
+/**
+* A motion model that simulates the action of walking or driving.
+*/
+class HumanMotionModel : public dtCore::MotionModel
+{
+	DECLARE_MANAGEMENT_LAYER(HumanMotionModel)
 
-      public:
+public:
 
-         /**
-          * Constructor.
-          *
-          * @param keyboard the keyboard instance, or 0 to
-          * avoid creating default input mappings
-          * @param mouse the mouse instance, or 0 to avoid
-          * creating default input mappings
-          */
-         HumanMotionModel(dtCore::Keyboard* keyboard = NULL,
-                         dtCore::Mouse* mouse = NULL);
+	/**
+	* Constructor.
+	*
+	* @param keyboard the keyboard instance, or 0 to
+	* avoid creating default input mappings
+	* @param mouse the mouse instance, or 0 to avoid
+	* creating default input mappings
+	*/
+	HumanMotionModel(float pHeight,
+		float pRadius,
+		float stepUpHeight,
+		dtCore::Scene* pScene,
+		dtCore::Keyboard* keyboard = NULL,
+		dtCore::Mouse* mouse = NULL);
 
-      protected:
-      
-         /**
-          * Destructor.
-          */
-         virtual ~HumanMotionModel();
+protected:
 
-      public:
-      
-         /**
-          * Sets the active Scene, which is used for ground following.
-          *
-          * @param scene the active scene
-          */
-         void SetScene(dtCore::Scene* scene);
-         
-         /**
-          * Returns the active Scene.
-          *
-          * @return the active Scene
-          */
-         dtCore::Scene* GetScene();
-         
-		 void toggleCollision();
+	/**
+	* Destructor.
+	*/
+	virtual ~HumanMotionModel();
 
-         /**
-          * Sets the input axes to a set of default mappings for mouse
-          * and keyboard.
-          *
-          * @param keyboard the keyboard instance
-          * @param mouse the mouse instance
-          */
-         void SetDefaultMappings(dtCore::Keyboard* keyboard, dtCore::Mouse* mouse);
-         
-         /**
-          * Sets the axis that moves the target forwards (for positive
-          * values) or backwards (for negative values).
-          *
-          * @param walkForwardBackwardAxis the new forward/backward axis
-          */
-         void SetWalkForwardBackwardAxis(dtCore::Axis* walkForwardBackwardAxis);
-         
-         /**
-          * Returns the axis that moves the target forwards (for positive
-          * values) or backwards (for negative values).
-          *
-          * @return the current forward/backward axis
-          */
-         dtCore::Axis* GetWalkForwardBackwardAxis();
-         
-         /**
-          * Sets the axis that turns the target left (for negative values)
-          * or right (for positive values).
-          *
-          * @param turnLeftRightAxis the new turn left/right axis
-          */
-         void SetTurnLeftRightAxis(dtCore::Axis* turnLeftRightAxis);
-         
-         /**
-          * Returns the axis that turns the target left (for negative values)
-          * or right (for positive values).
-          *
-          * @return the current turn left/right axis
-          */
-         dtCore::Axis* GetTurnLeftRightAxis();
+public:
 
-		 /**
-          * Sets the axis that turns the target up (for negative values)
-          * or down (for positive values).
-          *
-          * @param lookUpDownAxis the new turn up/down axis
-          */
-         void SetLookUpDownAxis(dtCore::Axis* lookUpDownAxis);
-         
-         /**
-          * Returns the axis that turns the target up (for negative values)
-          * or down (for positive values).
-          *
-          * @return the current turn up/down axis
-          */
-         dtCore::Axis* GetLookUpDownAxis();
-          
-         /**
-          * Sets the axis that sidesteps the target left (for negative values)
-          * or right (for positive values).
-          *
-          * @param sidestepLeftRightAxis the new sidestep left/right axis
-          */
-         void SetSidestepLeftRightAxis(dtCore::Axis* sidestepLeftRightAxis);
-         
-         /**
-          * Returns the axis that sidesteps the target left (for negative values)
-          * or right (for positive values).
-          *
-          * @return the current sidestep left/right axis
-          */
-         dtCore::Axis* GetSidestepLeftRightAxis();
-         
-         /**
-          * Sets the maximum walk speed (meters per second).
-          *
-          * @param maximumWalkSpeed the new maximum walk speed
-          */
-         void SetMaximumWalkSpeed(float maximumWalkSpeed);
-         
-         /**
-          * Returns the maximum walk speed (meters per second).
-          *
-          * @return the current maximum walk speed
-          */
-         float GetMaximumWalkSpeed();
-         
-         /**
-          * Sets the maximum turn speed (degrees per second).
-          *
-          * @param maximumTurnSpeed the new maximum turn speed
-          */
-         void SetMaximumTurnSpeed(float maximumTurnSpeed);
-         
-         /**
-          * Returns the maximum turn speed (degrees per second).
-          *
-          * @return the current maximum turn speed
-          */
-         float GetMaximumTurnSpeed();
-         
-         /**
-          * Sets the maximum sidestep speed (meters per second).
-          *
-          * @param maximumSidestepSpeed the new maximum sidestep speed
-          */
-         void SetMaximumSidestepSpeed(float maximumSidestepSpeed);
-         
-         /**
-          * Returns the maximum sidestep speed (meters per second).
-          *
-          * @return the current maximum sidestep speed
-          */
-         float GetMaximumSidestepSpeed();
-         
-         /**
-          * Sets the height to maintain above the terrain (meters).
-          *
-          * @param heightAboveTerrain the height to maintain above the
-          * terrain
-          */
-         void SetHeightAboveTerrain(float heightAboveTerrain);
-         
-         /**
-          * Returns the height to maintain above the terrain (meters).
-          *
-          * @return the height to maintain above the terrain
-          */
-         float GetHeightAboveTerrain();
-         
-         /**
-          * Sets the maximum step-up distance.  When clamping to the ground, the
-          * maximum step-up distance determines whether to rise to a new level
-          * (as when the model climbs a staircase) or to stay at the current level
-          * (as when the model passes under a roof).  The default is 1.0.
-          *
-          * @param maximumStepUpDistance the new maximum step-up distance
-          */
-         void SetMaximumStepUpDistance(float maximumStepUpDistance);
-         
-         /**
-          * Returns the current maximum step-up distance.
-          *
-          * @return the maximum step-up distance
-          */
-         float GetMaximumStepUpDistance();
-         
-         /**
-          * Message handler callback.
-          *
-          * @param data the message data
-          */
-		 virtual void OnMessage(dtCore::Base::MessageData *data);
-         
-		 float distanceToObjectInFront(const dtCore::Transform &trans, float distance);
-         
-      private:
-         
-         /**
-          * A reference to the Scene, used for ground following.
-          */
-		  dtCore::RefPtr<dtCore::Scene> mScene;
-         
-         /**
-          * The default input device.
-          */
-         dtCore::RefPtr<dtCore::LogicalInputDevice> mDefaultInputDevice;
-         
-         /**
-          * The left button up/down mapping.
-          */
-         dtCore::ButtonAxisToAxis* mLeftButtonUpDownMapping;
-         
-         /**
-          * The left button right/left mapping.
-          */
-         dtCore::ButtonAxisToAxis* mLeftButtonLeftRightMapping;
-         
-         /**
-          * The right button left/right mapping.
-          */
-         dtCore::ButtonAxisToAxis* mRightButtonLeftRightMapping;
-         
-         /**
-          * The arrow key up/down mapping.
-          */
-         dtCore::ButtonsToAxis* mArrowKeysUpDownMapping;
-         
-         /**
-          * The arrow key left/right mapping.
-          */
-         dtCore::ButtonsToAxis* mArrowKeysLeftRightMapping;
-         
-         /**
-          * The a/d key left/right mapping.
-          */
-         dtCore::ButtonsToAxis* mADKeysLeftRightMapping;
-         
-		 /**
-          * The w/s key up/down mapping.
-          */
-		 dtCore::ButtonsToAxis* mWSKeysUpDownMapping;
+	/**
+	* Sets the active Scene, which is used for ground following.
+	*
+	* @param scene the active scene
+	*/
+	void SetScene(dtCore::Scene* scene);
 
-		 /**
-          * The w/s key up/down mapping. (in case caps lock is on.)
-          */
-         dtCore::ButtonsToAxis* mWSKeysUpDownMappingCAPS;
-		
-         /**
-          * The default walk forward/backward axis.
-          */
-         dtCore::LogicalAxis* mDefaultWalkForwardBackwardAxis;
-         
-         /**
-          * The default turn left/right axis.
-          */
-         dtCore::LogicalAxis* mDefaultTurnLeftRightAxis;
-         
-		 /**
-          * The default turn left/right axis.
-          */
-         dtCore::LogicalAxis* mDefaultLookUpDownAxis;
+	/**
+	* Returns the active Scene.
+	*
+	* @return the active Scene
+	*/
+	dtCore::Scene* GetScene();
 
-         /**
-          * The default sidestep left/right axis.
-          */
-         dtCore::LogicalAxis* mDefaultSidestepLeftRightAxis;
-         
-         /**
-          * The axis that moves the target forwards or backwards.
-          */
-         dtCore::Axis* mWalkForwardBackwardAxis;
-         
-         /**
-          * The axis that turns the target to the left or right.
-          */
-         dtCore::Axis* mTurnLeftRightAxis;
-         
-		 /**
-          * The axis that turns the target to the left or right.
-          */
-         dtCore::Axis* mLookUpDownAxis;
+	void toggleCollision();
+	void setCollsionBits(unsigned long bits);
+	/**
+	* Sets the input axes to a set of default mappings for mouse
+	* and keyboard.
+	*
+	* @param keyboard the keyboard instance
+	* @param mouse the mouse instance
+	*/
+	void SetDefaultMappings(dtCore::Keyboard* keyboard, dtCore::Mouse* mouse);
 
-         /**
-          * The axis that sidesteps the target left or right.
-          */
-         dtCore::Axis* mSidestepLeftRightAxis;
-         
-         /**
-          * The maximum walk speed (meters per second).
-          */
-         float mMaximumWalkSpeed;
-         
-         /**
-          * The maximum turn speed (degrees per second).
-          */
-         float mMaximumTurnSpeed;
-         
-         /**
-          * The maximum sidestep speed (meters per second).
-          */
-         float mMaximumSidestepSpeed;
-         
-         /**
-          * The height to maintain above terrain (meters).
-          */
-         float mHeightAboveTerrain;
-         
-         /**
-          * The maximum step-up distance (meters).
-          */
-         float mMaximumStepUpDistance;
-         
-         /**
-          * The current downward speed.
-          */
-         float mDownwardSpeed;
+	/**
+	* Sets the axis that moves the target forwards (for positive
+	* values) or backwards (for negative values).
+	*
+	* @param walkForwardBackwardAxis the new forward/backward axis
+	*/
+	void SetWalkForwardBackwardAxis(dtCore::Axis* walkForwardBackwardAxis);
 
-		 /**
-          * Intersector for collision tests.
-          */
-		 dtCore::Isector* mIsector;
+	/**
+	* Returns the axis that moves the target forwards (for positive
+	* values) or backwards (for negative values).
+	*
+	* @return the current forward/backward axis
+	*/
+	dtCore::Axis* GetWalkForwardBackwardAxis();
 
-		 /**
-          * Toggle collision with objects IN FRONT of you.
-          */
-		 bool mCollisionOn;
+	/**
+	* Sets the axis that turns the target left (for negative values)
+	* or right (for positive values).
+	*
+	* @param turnLeftRightAxis the new turn left/right axis
+	*/
+	void SetTurnLeftRightAxis(dtCore::Axis* turnLeftRightAxis);
 
-		 /**
-          * The lowest level allowed, to prevent falling through a crack.
-          */
-		 float mMinimumHeight;
-   };
+	/**
+	* Returns the axis that turns the target left (for negative values)
+	* or right (for positive values).
+	*
+	* @return the current turn left/right axis
+	*/
+	dtCore::Axis* GetTurnLeftRightAxis();
+
+	/**
+	* Sets the axis that turns the target up (for negative values)
+	* or down (for positive values).
+	*
+	* @param lookUpDownAxis the new turn up/down axis
+	*/
+	void SetLookUpDownAxis(dtCore::Axis* lookUpDownAxis);
+
+	/**
+	* Returns the axis that turns the target up (for negative values)
+	* or down (for positive values).
+	*
+	* @return the current turn up/down axis
+	*/
+	dtCore::Axis* GetLookUpDownAxis();
+
+	/**
+	* Sets the axis that sidesteps the target left (for negative values)
+	* or right (for positive values).
+	*
+	* @param sidestepLeftRightAxis the new sidestep left/right axis
+	*/
+	void SetSidestepLeftRightAxis(dtCore::Axis* sidestepLeftRightAxis);
+
+	/**
+	* Returns the axis that sidesteps the target left (for negative values)
+	* or right (for positive values).
+	*
+	* @return the current sidestep left/right axis
+	*/
+	dtCore::Axis* GetSidestepLeftRightAxis();
+
+	/**
+	* Sets the maximum walk speed (meters per second).
+	*
+	* @param maximumWalkSpeed the new maximum walk speed
+	*/
+	void SetMaximumWalkSpeed(float maximumWalkSpeed);
+
+	/**
+	* Returns the maximum walk speed (meters per second).
+	*
+	* @return the current maximum walk speed
+	*/
+	float GetMaximumWalkSpeed();
+
+	/**
+	* Sets the maximum turn speed (degrees per second).
+	*
+	* @param maximumTurnSpeed the new maximum turn speed
+	*/
+	void SetMaximumTurnSpeed(float maximumTurnSpeed);
+
+	/**
+	* Returns the maximum turn speed (degrees per second).
+	*
+	* @return the current maximum turn speed
+	*/
+	float GetMaximumTurnSpeed();
+
+	/**
+	* Sets the maximum sidestep speed (meters per second).
+	*
+	* @param maximumSidestepSpeed the new maximum sidestep speed
+	*/
+	void SetMaximumSidestepSpeed(float maximumSidestepSpeed);
+
+	/**
+	* Returns the maximum sidestep speed (meters per second).
+	*
+	* @return the current maximum sidestep speed
+	*/
+	float GetMaximumSidestepSpeed();
+
+	/**
+	* Sets the height to maintain above the terrain (meters).
+	*
+	* @param heightAboveTerrain the height to maintain above the
+	* terrain
+	*/
+	void SetHeightAboveTerrain(float heightAboveTerrain);
+
+	/**
+	* Returns the height to maintain above the terrain (meters).
+	*
+	* @return the height to maintain above the terrain
+	*/
+	float GetHeightAboveTerrain();
+
+	/**
+	* Sets the maximum step-up distance.  When clamping to the ground, the
+	* maximum step-up distance determines whether to rise to a new level
+	* (as when the model climbs a staircase) or to stay at the current level
+	* (as when the model passes under a roof).  The default is 1.0.
+	*
+	* @param maximumStepUpDistance the new maximum step-up distance
+	*/
+	void SetMaximumStepUpDistance(float maximumStepUpDistance);
+
+	/**
+	* Returns the current maximum step-up distance.
+	*
+	* @return the maximum step-up distance
+	*/
+	float GetMaximumStepUpDistance();
+
+	/**
+	* Message handler callback.
+	*
+	* @param data the message data
+	*/
+	virtual void OnMessage(dtCore::Base::MessageData *data);
+
+	/**
+	* get the distance to polygon in front of player position.
+	*/
+	float distanceToObjectInFront(const dtCore::Transform &trans, float distance);
+
+	/**
+	* Reposition mouse to 0,0 on the screen (center).
+	*/
+	void ResetMousePosition();
+
+	void PerformTranslation(const double deltaTime, float sideStepFactor, float forwardBackFactor);
+private:
+
+	/**
+	* A reference to the Scene, used for ground following.
+	*/
+	dtCore::RefPtr<dtCore::Scene> mScene;
+
+	/**
+	* The default input device.
+	*/
+	dtCore::RefPtr<dtCore::LogicalInputDevice> mDefaultInputDevice;
+
+	/**
+	* The left button up/down mapping.
+	*/
+	dtCore::ButtonAxisToAxis* mLeftButtonUpDownMapping;
+
+	/**
+	* The left button right/left mapping.
+	*/
+	dtCore::ButtonAxisToAxis* mLeftButtonLeftRightMapping;
+
+	/**
+	* The right button left/right mapping.
+	*/
+	dtCore::ButtonAxisToAxis* mRightButtonLeftRightMapping;
+
+	
+
+	/**
+	* The page up/down key up/down mapping.
+	*/
+	dtCore::ButtonsToAxis* mPageKeysUpDownMapping;
+
+	/**
+	* The arrow key up/down mapping.
+	*/
+	dtCore::ButtonsToAxis* mArrowKeysUpDownMapping;
+
+	/**
+	* The arrow key left/right mapping.
+	*/
+	dtCore::ButtonsToAxis* mArrowKeysLeftRightMapping;
+
+	/**
+	* The a/d key left/right mapping.
+	*/
+	dtCore::ButtonsToAxis* mADKeysLeftRightMapping;
+
+	/**
+	* The w/s key up/down mapping.
+	*/
+	dtCore::ButtonsToAxis* mWSKeysUpDownMapping;
+
+	/**
+	* The w/s key up/down mapping. (in case caps lock is on.)
+	*/
+	dtCore::ButtonsToAxis* mWSKeysUpDownMappingCAPS;
+
+	/**
+	* The default walk forward/backward axis.
+	*/
+	dtCore::LogicalAxis* mDefaultWalkForwardBackwardAxis;
+
+	/**
+	* The default turn left/right axis.
+	*/
+	dtCore::LogicalAxis* mDefaultTurnLeftRightAxis;
+
+	/**
+	* The default turn left/right axis.
+	*/
+	dtCore::LogicalAxis* mDefaultLookUpDownAxis;
+
+	/**
+	* The default sidestep left/right axis.
+	*/
+	dtCore::LogicalAxis* mDefaultSidestepLeftRightAxis;
+
+	/**
+	* The axis that moves the target forwards or backwards.
+	*/
+	dtCore::Axis* mWalkForwardBackwardAxis;
+
+	/**
+	* The axis that turns the target to the left or right.
+	*/
+	dtCore::Axis* mTurnLeftRightAxis;
+
+
+	/**
+	* The axis that turns the target to the left or right.
+	*/
+	dtCore::Axis* mLookUpDownAxis;
+
+	/**
+	* The axis that sidesteps the target left or right.
+	*/
+	dtCore::Axis* mSidestepLeftRightAxis;
+
+	/**
+	* The maximum walk speed (meters per second).
+	*/
+	float mMaximumWalkSpeed;
+
+	/**
+	* The maximum turn speed (degrees per second).
+	*/
+	float mMaximumTurnSpeed;
+
+	/**
+	* The maximum sidestep speed (meters per second).
+	*/
+	float mMaximumSidestepSpeed;
+
+	/**
+	* The height to maintain above terrain (meters).
+	*/
+	float mHeightAboveTerrain;
+
+	/**
+	* The maximum step-up distance (meters).
+	*/
+	float mMaximumStepUpDistance;
+
+	/**
+	* The current downward speed.
+	*/
+	float mDownwardSpeed;
+
+	/**
+	* Intersector for collision tests.
+	*/
+	dtCore::Isector* mIsector;
+
+	/**
+	* Toggle collision with objects IN FRONT of you.
+	*/
+	bool mCollisionOn;
+
+	/**
+	* The lowest level allowed, to prevent falling through a crack.
+	*/
+	float mMinimumHeight;
+
+	/**
+	* Last turn on iteration (from axis->GetState()) so we can turn on mouse position differential.
+	*/
+	double mLastLookLeftRight;
+	double mLastLookUpDown;
+
+	/**
+	* Limits to prevent axis fighting from looking completely vertical.
+	*/
+	double mMinLookUpDown;
+	double mMaxLookUpDown;
+
+	dtCore::FPSCollider mCollider;
+
+	dtCore::RefPtr<dtCore::Mouse>    mMouse;
+	dtCore::RefPtr<dtCore::Keyboard> mKeyboard;
+};
 
 
 #endif // OFV_HUMANMOTIONMODEL

@@ -1,0 +1,20 @@
+Follow directions here for Qt 4.8.6 on MSVS 2015:
+http://stackoverflow.com/questions/32848962/how-to-build-qt-4-8-6-with-visual-studio-2015-without-official-support
+
+Webkit fixes:
+http://stackoverflow.com/questions/18080625/qt-4-8-visual-studio-2013-compiling-error
+
+https://bitbucket.org/Vertexwahn/bluego/src/56dbe84212222ec6954d8d327a5e443106bcc447/deploy/BlueGo0.0.4/qt4.8.3vs2012patch/HashSet.h?at=default&fileviewer=file-view-default
+
+
+To run vcvarsall.bat to use a 64-bit toolset
+At the command prompt, change to the Visual C++ installation directory. (The location depends on the system and the Visual Studio installation, but a typical location is C:\Program Files (x86)\Microsoft Visual Studio version\VC\.) For example, enter:
+cd "Program Files (x86)Microsoft Visual Studio 12.0VC"
+
+To configure this Command Prompt window for 64-bit command-line builds that target x64 platforms, at the command prompt, enter:
+vcvarsall amd64
+
+in C:\Qt\4.8.6\mkspecs\win32-msvc2015\qmake.conf:
+QMAKE_CXXFLAGS          = $$QMAKE_CFLAGS /MP
+
+configure -make nmake -platform win32-msvc2015 -prefix C:\Qt\4.8.6 -opensource -confirm-license -opengl desktop -nomake examples -nomake tests

@@ -68,23 +68,28 @@
 //---------------------------------------------------------------------------//
 
 #include <OFV/Qt/App.h>
+#include <OFV/GMApp/OFVInputComponent.h>
 
 #include <dtCore/deltawin.h>
 #include <QtOpenGL/QGLWidget>
 #include <dtQt/osggraphicswindowqt.h>
 #include <dtCore/project.h>
 #include <dtCore/map.h>
+#include <dtCore/scene.h>
 #include <dtCore/system.h>
 #include <QtCore/QFileInfo>
 #include <QtCore/QDir>
-
+#include <dtCore/environment.h>
 #include <iostream>
+#include <dtActors/weatherenvironmentactor.h>
+#include <dtUtil/threadpool.h>
+#include <dtUtil/log.h>
 
 using namespace dtCore;
 using namespace dtABC;
 
-App::App(int argc, char **argv, const std::string& configFilename)
-: GameApplication(argc, argv, configFilename)
+App::App(int argc, char **argv) :
+	dtGame::GameApplicationLoader(argc, argv)
 {
 	
 }
@@ -92,34 +97,66 @@ App::App(int argc, char **argv, const std::string& configFilename)
 //////////////////////////////////////////////////////////////////////////
 App::~App()
 {
-   //The widget's about to be destroyed so we need to tell the GraphicsWindow it's gone (to avoid crash on exit)
-   dtQt::OSGGraphicsWindowQt* osgGraphWindow = dynamic_cast<dtQt::OSGGraphicsWindowQt*>(GetWindow()->GetOsgViewerGraphicsWindow());
+	// Since the widget is about to be terminated, we need to tell the GraphicsWindow.  If we don't, the application will crash on exit
+	/*dtQt::OSGGraphicsWindowQt* osgGraphWindow = dynamic_cast<dtQt::OSGGraphicsWindowQt*>(GetGameManager()->GetApplication().GetWindow()->GetOsgViewerGraphicsWindow());
    if (osgGraphWindow)
    {
       osgGraphWindow->SetQGLWidget(NULL);
    }
+ */
+
+}
+
+void App::toggleVisibility(const QString & actorName, bool visible)
+{
+	dtGame::GMComponent *comp = GetGameManager()->GetComponentByName("Input Component");
+	OFVInputComponent*  inputcomp = static_cast<OFVInputComponent*>(comp);
+	inputcomp->setActorVisible(actorName.toStdString(), visible);
+}
+void App::jumpTo(double x, double y, double z, double h, double p, double r)
+{
+	dtGame::GMComponent *comp = GetGameManager()->GetComponentByName("Input Component");
+	OFVInputComponent*  inputcomp = static_cast<OFVInputComponent*>(comp);
+	inputcomp->jumpTo(x, y, z, h, p, r);
 }
 
 //////////////////////////////////////////////////////////////////////////
-void App::Config()
-{
-   GameApplication::Config();
+void App::Config(const std::string& configFileName)
+{ 
+   GameApplicationLoader::Config(configFileName);
    connect(&mMainWindow, SIGNAL(LoadFile(const QString&)), this, SLOT(OnLoadFile(const QString&)));
-
+   connect(&mMainWindow, SIGNAL(toggleVisibility(const QString&, bool)), this, SLOT(toggleVisibility(const QString&, bool)));
+   connect(&mMainWindow, SIGNAL(jumpTo(double, double, double, double, double, double)), 
+				   this, SLOT(jumpTo(double, double, double, double, double, double)));
    connect(this, SIGNAL(FileLoaded(bool)), &mMainWindow, SLOT(OnFileLoaded(bool)));
+   connect(&mMainWindow, SIGNAL(appShutDown()), this, SLOT(onAppShutDown()));
 
    osg::DisplaySettings::instance()->setNumMultiSamples( 8 ); 
 
-   dtQt::OSGGraphicsWindowQt* osgGraphWindow = dynamic_cast<dtQt::OSGGraphicsWindowQt*>(GetWindow()->GetOsgViewerGraphicsWindow());
+   dtQt::OSGGraphicsWindowQt* osgGraphWindow = dynamic_cast<dtQt::OSGGraphicsWindowQt*>(GetGameManager()->GetApplication().GetWindow()->GetOsgViewerGraphicsWindow());
    mMainWindow.SetGraphicsWidget(osgGraphWindow->GetQGLWidget());
    
+//   dtUtil::Log::GetInstance().SetLogLevel(dtUtil::Log::LOG_DEBUG);
+
    QGLFormat fmt;
    QGLFormat::setDefaultFormat(fmt); 
    fmt.setSamples(8);
-   fmt.setSampleBuffers(true);
+   fmt.setSampleBuffers(true); 
    osgGraphWindow->GetQGLWidget()->setFormat(fmt);
 
    mMainWindow.show(); 
+}
+///////////////////////////////////////////////////////////////////////////////
+void App::onAppShutDown()
+{
+	std::cout << "Shutting Down App...\n";
+	GetGameManager()->SetPaused(true);
+	//GetGameManager()->ChangeMap("blank"); 
+	//GetGameManager()->DeleteActor(GetGameManager()->GetEnvironmentActor()->GetId());
+	//GetGameManager()->SetEnvironmentActor(NULL);
+	//GetGameManager()->DeleteAllActors(); //need to explicitly delete environment actor??
+	//GetGameManager()->GetScene().RemoveAllDrawables();
+	GetGameManager()->Shutdown();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -138,14 +175,18 @@ void App::OnLoadFile(const QString& filename)
    std::cout << "Loading map " << file.baseName().toStdString() << "\n";
    mMap = &Project::GetInstance().GetMap(file.baseName().toStdString());
    
-   LoadMap(*mMap);
+   GetGameManager()->GetApplication().LoadMap(*mMap);
 
-   System::GetInstance().SetFrameRate(60.0);
+   System::GetInstance().SetFrameRate(30.0);
    System::GetInstance().SetMaxTimeBetweenDraws(.1);
-   System::GetInstance().SetUseFixedTimeStep(true);
+   System::GetInstance().SetUseFixedTimeStep(false);
 
    
    GetGameManager()->SetPaused(false);
 
    emit FileLoaded(valid);
+
+  
+
 }
+

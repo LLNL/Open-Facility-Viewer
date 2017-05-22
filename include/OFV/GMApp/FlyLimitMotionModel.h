@@ -4,7 +4,7 @@
 // Copyright (C) 2016, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory.
-//
+// Prepared by LLNL under Contract DE-AC52-07NA27344.
 // All Rights Reserved.
 //
 // Our Preamble Notice
@@ -46,55 +46,84 @@
 // along with Open Facility Viewer (OFV). If not, see <http://www.gnu.org/licenses/>
 //
 //---------------------------------------------------------------------------//
+// 
+// OFV - FlyLimitMotionModel
+// 
+// portions taken from dtCore::FlyMotionModel in 
+// Delta3d Open Source Game and Simulation Engine
+// Copyright (C) 2004-2005 MOVES Institute
+// under the terms of the GNU Lesser General Public License 2.1 or later
+//
+//---------------------------------------------------------------------------//
 
-#ifndef OFV_GAME_ENTRY_POINT_H_
-#define OFV_GAME_ENTRY_POINT_H_
-#include <dtGame/gameentrypoint.h>
-#include <dtUtil/exception.h>
-#include <dtCore/refptr.h>
-
-#include <OFV/GMApp/Export.h>
+#ifndef OFV_FLYLIMITMOTIONMODEL
+#define OFV_FLYLIMITMOTIONMODEL
 
 
-namespace dtGame
+
+//////////////////////////////////////////////////////////////////////
+#include <dtCore/base.h>
+#include <dtCore/flymotionmodel.h>
+
+namespace dtCore
 {
-   class GameApplicationLoader;
-   class GameManager;
-   class MachineInfo;
-   class EnvironmentActor;
+	//forward declaration
+	class Scene;
+	class Keyboard;
+	class Mouse;
+	class LogicalInputDevice;
+	class ButtonAxisToAxis;
+	class Axis;
+	class ButtonsToAxis;
+	class LogicalAxis;
+	class Isector;
 }
-
-
-
-namespace OFVGM
+/**
+* A motion model Limits the area where you can fly.
+*/
+class FlyLimitMotionModel : public dtCore::FlyMotionModel
 {
-  
-   class OFV_GAME_EXPORT OFVGameEntryPoint: public dtGame::GameEntryPoint
-   {
-      public: 
-        
-         OFVGameEntryPoint();
-         virtual ~OFVGameEntryPoint();
+	DECLARE_MANAGEMENT_LAYER(FlyLimitMotionModel)
 
-         /**
-          * Called to initialize the game application.
-          * @param app the current application
-          */
-         virtual void Initialize(dtABC::BaseABC& app, int argc, char **argv);
+public:
 
-         /**
-          * Called after all startup related code is run.
-          * @param app the current application
-          */
-         virtual void OnStartup(dtABC::BaseABC& app, dtGame::GameManager& gamemanager);
+	/**
+	* Constructor.
+	*
+	* @param minimumXYZ min limit of extents where one can fly to.
+	* @param maximumXYZ max limit of extents where one can fly to.
+	* @param keyboard the keyboard instance, or 0 to
+	* avoid creating default input mappings
+	* @param mouse the mouse instance, or 0 to avoid
+	* creating default input mappings
+	*/
+	FlyLimitMotionModel(osg::Vec3 minimumXYZ,
+		osg::Vec3 maximumXYZ,
+		dtCore::Keyboard* keyboard = NULL,
+		dtCore::Mouse* mouse = NULL);
+
+	/**
+	* Message handler callback.
+	*
+	* @param data the message data
+	*/
+	virtual void OnMessage(MessageData* data);
+
+protected:
+
+	/**
+	* Destructor.
+	*/
+	virtual ~FlyLimitMotionModel();
 
 
-      protected:
-   
 
-      private:
-		  std::string mMapName;
-   };
+private:
+	bool insideLimits(const osg::Vec3 &xyz);
+	osg::Vec3 mMinimumXYZ;
+	osg::Vec3 mMaximumXYZ;
 
-}
-#endif
+};
+
+
+#endif // OFV_FLYLMITMOTIONMODEL

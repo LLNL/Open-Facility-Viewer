@@ -55,59 +55,98 @@
 #include <OFV/GMApp/HumanMotionModel.h>
 #include <OFV/GMApp/Export.h>
 #include <dtGame/baseinputcomponent.h>
-
-
-
+#include <QtCore/QMap>
+#include <QtCore/QSize>
+class FlyLimitMotionModel;
+class QProgressDialog;
 
 namespace dtCore
 {
-  class DeltaDrawable;
-  class FlyMotionModel;
+	class DeltaDrawable;
+	class CollisionMotionModel;
 }
 
 namespace dtGame
 {
-   class Message;
-   class LogKeyframe;
+	class Message;
+	class LogKeyframe;
+}
+
+namespace osg
+{
+	class Texture2D;
+	class Geode;
+	class PositionAttitudeTransform;
 }
 
 
 
 
+class OFV_GAME_EXPORT OFVInputComponent : public dtGame::BaseInputComponent
+{
+public:
+
+	/// Constructor
+	OFVInputComponent();
+
+	virtual void ProcessMessage(const dtGame::Message &message);
+
+	//virtual bool HandleButtonPressed( const dtCore::Mouse* mouse, dtCore::Mouse::MouseButton button );
+	//virtual bool HandleButtonReleased( const dtCore::Mouse* mouse, dtCore::Mouse::MouseButton button );
+	virtual bool HandleKeyPressed(const dtCore::Keyboard* keyboard, int key);
+	//virtual bool HandleKeyReleased(const dtCore::Keyboard* keyboard, int key);
+	void setActorVisible(std::string actorName, bool visible);
+	dtCore::DeltaDrawable* getActorDrawable(std::string actorName);
+	dtCore::Transformable* getActorTransformable(std::string actorName);
+	void setFOV(double diff);
+	void jumpTo(double x, double y, double z, double h, double p, double r);
+	
+protected:
+	/// Destructor
+	virtual ~OFVInputComponent();
 
 
-   class OFV_GAME_EXPORT OFVInputComponent : public dtGame::BaseInputComponent
-   {
-   public:
+private:
+	osg::Geode* loadOSGImage(std::string textureFile, osg::Vec2 textureCoordinates, osg::Vec2 textureSize);
+	osg::Texture2D* loadTexture(const std::string& path);
+	void applyTextureOffset(osg::Geode* geode, osg::Vec2 textureOffset, osg::Vec2 GeomSize, osg::Vec2 imageSize);
 
-     /// Constructor
-     OFVInputComponent();
+	void teleportToPlayerStart();
+	void printPlayerLocation();
+	void createMiniMap();
+	void createLogo();
+	void createHUD();
+	void updateMap();
+	void checkModelVisibility();
+	void checkWindowSizeChanged();
+	void switchMotionModels();
+	void multiplyMotionModelSpeed(float factor);
+	void multiplyTurnModelSpeed(float factor);
+	dtCore::RefPtr<HumanMotionModel> mHumanMotionModel;
+	dtCore::RefPtr<dtCore::Transformable> mPlayerActor;
+	dtCore::RefPtr<FlyLimitMotionModel> mFlyMM;
+	osg::ref_ptr<osg::Geode> mMapGeode;
+	osg::ref_ptr<osg::Geode> mDot;
+	
+	osg::ref_ptr<osg::PositionAttitudeTransform> mLogotrans;
+	osg::ref_ptr<osg::Camera> mHUD;
+	osg::Vec2 mMapWindowSize;
+	//dtCore::RefPtr<dtCore::CollisionMotionModel> mCollisionMotionModel;
+	bool mInitalizedPlayer;
+	bool mMapLoaded;
+	int mTicks;
+	QSize mLastWindowSize;
+	QProgressDialog* mProgressDialog;
 
-     virtual void ProcessMessage(const dtGame::Message &message);
+	QMap<QString, osg::Vec3> mModelRenderDistance;
 
-     //virtual bool HandleButtonPressed( const dtCore::Mouse* mouse, dtCore::Mouse::MouseButton button );
-     //virtual bool HandleButtonReleased( const dtCore::Mouse* mouse, dtCore::Mouse::MouseButton button );
-     virtual bool HandleKeyPressed(const dtCore::Keyboard* keyboard, int key);
-     //virtual bool HandleKeyReleased(const dtCore::Keyboard* keyboard, int key);
+	float mCorrectionX;
+	float mCorrectionY;
+	float mCorrectionSizeX;
+	float mCorrectionSizeY;
 
-     
-
-   protected:
-     /// Destructor
-     virtual ~OFVInputComponent();
-    
-
-   private:
-	 
-     void teleportToPlayerStart();
-	 void printPlayerLocation();
-	 void switchMotionModels();
-	 void multiplyMotionModelSpeed(float factor);
-	 dtCore::RefPtr<HumanMotionModel> mHumanMotionModel;
-     dtCore::RefPtr<dtCore::Transformable> mPlayerActor;
-     dtCore::RefPtr<dtCore::FlyMotionModel> mFlyMM;
-
-
-   };
+	enum MapDebugLevel {MAP_X_DEBUG, MAP_Y_DEBUG, MAP_NO_DEBUG};
+	MapDebugLevel mMapDebug;
+};
 
 #endif

@@ -3,6 +3,11 @@
 ;Also Orignally based on Delta3d installer and SceneWorks installer
 ;Written by John Goforth
 
+;;;;;;;;;;;;;;;;; HOW TO RELEASE JECP ;;;;;;;;;;;;;;;;;;
+; 1. Make sure file/dir exclusion list (/x) is up to date in this file.
+; 2. VERSION, and "Name" variable
+; 3. Update #define at top of MainWindow.cpp
+; 4. Check SimCore weathercomponent to see whether time is disabled.
 
 ; Include paths found by CMake
 ; Anything that needs to be installed from our development release
@@ -24,14 +29,14 @@ SetCompressorDictSize 32
  !endif
  
  !ifndef VERSION
-  !define VERSION '1.2' ; Should match the tag on the tree.
+  !define VERSION '1.6.4' ; ALSO CHANGE VERSION IN MAINWINDOW.CPP !!!!!!
 !endif
 
 
 !ifdef OUTFILE
   OutFile "${OUTFILE}"
 !else
-  OutFile OFV_win32_${VERSION}_setup.exe
+  OutFile OFV_${VERSION}_x64_setup.exe
 !endif
 
 ;Name and file
@@ -48,7 +53,7 @@ Name "Open Facility Viewer"
 
 
   ;Default installation folder
-  InstallDir "$PROGRAMFILES\${EXENAME}"
+  InstallDir "$PROGRAMFILES64\${EXENAME}"
   
   ;Get installation folder from registry if available
   InstallDirRegKey HKCU "Software\OFV" ""
@@ -101,6 +106,7 @@ Section "OFV Software" SecAll
   File .\bin\OFV.exe
   File /r /x *d.dll .\bin\*.dll
   File .\README.txt
+  File .\*.png
   
   ;;;;;;;;;;; EXTERNAL BINS ;;;;;;;;;;;;;;;;;;;;
    SetOutPath $INSTDIR
@@ -108,10 +114,14 @@ Section "OFV Software" SecAll
   ;Add the Delta3d stuff
    File ${EXCLUDES} ${DELTA_DIR}\bin\*dt*.dll
    File ${EXCLUDES} ${DELTA_DIR}\ext\bin\*.dll
+   File ${EXCLUDES} ${DELTA_DIR}\ext\bin\osgPlugins-3.4.0\*.dll
    File ${DELTA_DIR}\ext\bin\cal3d.dll   ;previous cmd forgot this one
-  ;extra tools
-   File ${EXCLUDES} ${DELTA_DIR}\ext\OpenSceneGraph-2.8.5-VS9.0.30729-x86-release-12493\bin\osgconv.exe
-   File ${EXCLUDES} ${DELTA_DIR}\ext\OpenSceneGraph-2.8.5-VS9.0.30729-x86-release-12493\bin\osgviewer.exe
+   ;extra tools
+   File ${EXCLUDES} ${DELTA_DIR}\bin\STAGE.exe
+   File ${EXCLUDES} ${DELTA_DIR}\bin\ObjectViewer.exe
+   ;File ${EXCLUDES} .\ext\OpenSceneGraph-3.2.3_x64\bin\osgconv.exe
+   ;File ${EXCLUDES} .\ext\OpenSceneGraph-3.2.3_x64\bin\osgviewer.exe
+
 ;   File ${EXCLUDES} ${DELTA_DIR}\..\gdal-1.9.2\bin\gdal\apps\gdal_translate.exe
 
    ;no ext dir yet!
@@ -167,12 +177,21 @@ Section "Shapash Scenario" IAEA
   SetOutPath $INSTDIR
   ;File .\config.xml
   
-  ;Add the IAEA Data -- "SANDBOX" directories are places to store files that shouldn't be distributed as a part of the install.
-  ; ignore application.xsd and map.xsd because they are grabbed from delta3d data dir.
-  SetOutPath $INSTDIR\data
-  File /r .\data\*.*
+  ;Add the IAEA Data
+  ;SetOutPath $INSTDIR\data
+  ;File /r /x *git /x *death_valley* /x *iaea* .\data\*.*
+  ;File /r /x *git .\data\*.*
   
- 
+  ;SFX files should include 
+
+   SetOutPath $INSTDIR
+   ; ExecToLog is silent, no console opens up, puts output to our log window
+	;nsExec::ExecToLog '"$EXEDIR\TerrainSFX.exe" x -y'
+
+    SetOutPath $INSTDIR
+    ;ExecToLog is silent, no console opens up, puts output to our log window
+	nsExec::ExecToLog '"$EXEDIR\ModelSFX.exe" x -y'
+	
 SectionEnd ;"IAEA Scenarios" 
 
 
@@ -181,22 +200,15 @@ SectionEnd ;"IAEA Scenarios"
 SectionGroup /e "Additional Installations"
 
 
-	Section "OpenAL Drivers" OpenALSection
-	  SetOutPath $INSTDIR\redist
-	  File /nonfatal "..\OFV\redist\oalinst.exe"
-	  ExecWait "$INSTDIR\redist\oalinst.exe /S"
-	SectionEnd
 	
 
 	Section "VCRedist Packages" VCRedistSection
 	  ; TODO: Maybe temp would be a better path?
 	  SetOutPath $INSTDIR\redist
-	  File /nonfatal "..\OFV\redist\vcredist_*"
+	  File /nonfatal "..\OFV\redist\VS2015_x64\vcredist_x64.exe"
 	  SetOutPath $TEMP
-	  ;ExecWait "$INSTDIR\redist\vcredist_x64.exe /Q"
-	  ExecWait "$INSTDIR\redist\vcredist_x86.exe /Q"
-	  ;ExecWait "$INSTDIR\redist\vcredist_x86_2005.exe /Q"
-	  ExecWait "$INSTDIR\redist\vcredist_x86_2005_atl_security.exe /Q"
+	  ExecWait "$INSTDIR\redist\VS2015_x64\vcredist_x64.exe /Q"
+	  
 	SectionEnd
 	
 	
@@ -210,9 +222,10 @@ SectionGroup /e "Additional Installations"
 	   Push '${DELTA_DATA}'
 	   Call WriteEnvExpStr
 
-	   Push "DELTA_THREADING"
-	   Push 'DrawThreadPerContext'
-	   Call WriteEnvExpStr
+	   ;THIS CAUSES STAGE TO NOT WORK.
+	   ;Push "DELTA_THREADING"
+	   ;Push 'DrawThreadPerContext'
+	   ;Call WriteEnvExpStr
 	   
 
 	SectionEnd

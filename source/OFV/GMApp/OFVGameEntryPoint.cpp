@@ -47,7 +47,7 @@
 //
 //---------------------------------------------------------------------------//
 
-#include <dtDAL/project.h>
+#include <dtCore/project.h>
 #include <dtABC/application.h>
 #include <dtGame/gamemanager.h>
 #include <dtGame/gameapplication.h>
@@ -83,9 +83,9 @@ namespace OFVGM
    {
    }
 
-   void OFVGameEntryPoint::Initialize(dtGame::GameApplication& app, int argc, char **argv)
+   void OFVGameEntryPoint::Initialize(dtABC::BaseABC& app, int argc, char **argv)
    {
-	
+	 
 	  osg::ArgumentParser* parser = new osg::ArgumentParser(&argc, argv);
       parser->getApplicationUsage()->setCommandLineUsage("OFV.exe [--mapName <mapname>]");		
       
@@ -94,25 +94,25 @@ namespace OFVGM
 	  //If map not provided on commandline use our default map "OFV_1.dtmap"
      if (!parser->read("--mapName", mMapName))
      {
-         LOG_ERROR("Map specified not found: " + mMapName);
+         //LOG_ERROR("Map specified not found: " + mMapName);
          mMapName = "OFV_1";
-		 LOG_ERROR("Opening default map: " + mMapName);
+		 LOG_INFO("Opening default map: " + mMapName);
      }
 	  
    }
  
   
 	
-   void OFVGameEntryPoint::OnStartup(dtGame::GameApplication& app)
+   void OFVGameEntryPoint::OnStartup(dtABC::BaseABC& app, dtGame::GameManager& gamemanager)
    {     
       // Add Input Component
       dtCore::RefPtr<OFVInputComponent> mInputComponent = new OFVInputComponent();
-      app.GetGameManager()->AddComponent(*mInputComponent, dtGame::GameManager::ComponentPriority::NORMAL);
+      gamemanager.AddComponent(*mInputComponent, dtGame::GameManager::ComponentPriority::NORMAL);
 		
 	  //set project directory to working directory + data/ProjectAssets.
 	  dtCore::Project::GetInstance().SetContext("data/ProjectAssets", true);
 		
 	  //Load the map and all its assets.
-	  app.GetGameManager()->ChangeMap(mMapName);
+	  gamemanager.ChangeMap(mMapName);
    }
 }

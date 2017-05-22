@@ -14,6 +14,7 @@ SET(LIB_SOURCES
    "${SOURCE_PATH}/OFVGameEntryPoint.cpp"
    "${SOURCE_PATH}/OFVInputComponent.cpp"   
    "${SOURCE_PATH}/HumanMotionModel.cpp"
+   "${SOURCE_PATH}/FlyLimitMotionModel.cpp"
    )
 
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/config.h)
@@ -33,9 +34,7 @@ TARGET_LINK_LIBRARIES(${LIB_NAME}
 )
 
 LINK_WITH_VARIABLES(${LIB_NAME}	
-                                            
-                         DTUTIL_LIBRARY
-                         DTDAL_LIBRARY
+						 DTUTIL_LIBRARY
                          DTCORE_LIBRARY
                          DTANIM_LIBRARY
                          DTAI_LIBRARY
@@ -62,7 +61,9 @@ LINK_WITH_VARIABLES(${LIB_NAME}
                          DTPHYSICS_LIBRARY
                          PAL_LIBRARY
                          OSGSHADOW_LIBRARY
+						 OSGVIEWER_LIBRARY
                          QT_QTCORE_LIBRARY
+						QT_QTGUI_LIBRARY
                                    )
 
 

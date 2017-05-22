@@ -53,29 +53,68 @@
 #include <QtGui/QApplication>
 #include <dtCore/system.h>
 
-int main(int argc, char **argv)
-{	
+//remove the console window in Release versions.
+
+//#ifdef BUILD_AS_CONSOLE
+int main(int argc, char ** argv) {
+/*#else
+#include <Windows.h>
+int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
+
+	// Unicode fail...
+	LPWSTR str1 = GetCommandLineW();
+	QString command_line = QString::fromUtf16((const ushort*)str1);
+
+	// This is not an obvious solution ... it preserves an argument with its quotes intact
+	QRegExp regex(" +(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
+	QStringList q_args = command_line.split(regex);
+
+
+	int argc = q_args.size();
+	static char** argv = new char*[argc];
+
+	int i = 0;
+	foreach(QString q_arg, q_args) {
+		q_arg = q_arg.remove("\""); // until we remove them here
+		size_t arg_s = q_arg.size() + 1;
+		argv[i] = new char[arg_s];
+		memcpy(argv[i], q_arg.toStdString().c_str(), arg_s);
+		i++;
+	}
+
+#endif     // _CONSOLE
+*/
+	 
    //Setup Qt windowing system.
    QApplication qapp(argc, argv);
    dtQt::QtGuiWindowSystemWrapper::EnableQtGUIWrapper();
    dtUtil::Log::SetAllLogLevels(dtUtil::Log::LOG_INFO);
    
-   dtCore::RefPtr<App> app = new App(argc, argv);
-   
+   App* app = new App(argc, argv);
+   try
+   {
    //Load our own game library DLL which is the heart of Delta3D.
    app->SetGameLibraryName("OFVGMApp"); 
    
    app->Config(); //configuring the application since we have no config file.
    
    //Do not call app->Run() because we are using Qt.  Use DeltaStepper. 
+   //dtCore::System::GetInstance().SetShutdownOnWindowClose(true);
    dtCore::System::GetInstance().Start();
    dtQt::DeltaStepper stepper;
    stepper.Start();
-
+    
    qapp.exec();
-
+   
    stepper.Stop();
    dtCore::System::GetInstance().Stop();
+   delete app;
 
+   }
+   catch (...)
+   {
+	  // e.LogException(dtUtil::Log::LOG_ERROR);
+	  // return -1;
+   }
    return 0;
 }

@@ -1,0 +1,25 @@
+====================================
+OFV - Open Facility Viewer
+====================================
+
+
+How to Build:
+
+* Fully tested with Visual Studio 2008 service pack 1
+
+* Requires CMake 2.8 for build system
+
+Dependencies:
+- Delta3D v2.8
+- Qt 4.8.6
+
+get Delta3D dependency builds at http://svn.code.sf.net/p/delta3d-extras/code/ExtDep/releases/  (REV 3596)
+
+====================================
+
+How to Run:
+
+Run bin/OFV.exe from the OFV directory. Do not run from bin directory, the project assets (data) will not be found.
+
+====================================
+

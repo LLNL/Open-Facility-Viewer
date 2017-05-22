@@ -43,7 +43,58 @@
     <addaction name="actionControls"/>
     <addaction name="actionAbout"/>
    </widget>
+   <widget class="QMenu" name="menuElements">
+    <property name="title">
+     <string>Elements</string>
+    </property>
+    <widget class="QMenu" name="menuNuclear_Material_Flow">
+     <property name="title">
+      <string>Nuclear Material Flow</string>
+     </property>
+     <addaction name="actionFuel_Assemblies"/>
+     <addaction name="actionHot_Waste"/>
+     <addaction name="actionIrradiated_Fuel_Pins"/>
+     <addaction name="actionLiquid_Effluent"/>
+     <addaction name="actionExperimental_Materials"/>
+     <addaction name="actionNuclear_Waste_Drums"/>
+     <addaction name="actionResearch_Waste"/>
+     <addaction name="actionSolid_Waste"/>
+     <addaction name="actionUranium_Oxide_Powders"/>
+     <addaction name="actionUranium_Samples"/>
+     <addaction name="separator"/>
+     <addaction name="actionAll"/>
+     <addaction name="actionAll_Off"/>
+    </widget>
+    <addaction name="menuNuclear_Material_Flow"/>
+    <addaction name="actionFlying_Arrows"/>
+    <addaction name="actionACB_Flow_Arrows"/>
+    <addaction name="actionBuilding_Signs"/>
+    <addaction name="actionSecurity_Signs"/>
+    <addaction name="actionTowers_and_Fence"/>
+    <addaction name="separator"/>
+    <addaction name="actionNavigation_Map"/>
+   </widget>
+   <widget class="QMenu" name="menuJump_To">
+    <property name="title">
+     <string>Jump To</string>
+    </property>
+    <addaction name="action1_Shapash_Facility_Entrance"/>
+    <addaction name="action2_Storage_Bunker"/>
+    <addaction name="action3_Research_Reactor"/>
+    <addaction name="action4_Reactor_Hall"/>
+    <addaction name="action5_Fuel_Fabrication_Building"/>
+    <addaction name="action6_Fuel_Fabrication_Pin_Assembly_Area"/>
+    <addaction name="action7_Fuel_Fabrication_Building_Mezzanine"/>
+    <addaction name="action8_Fuel_Fabrication_Building_Basement"/>
+    <addaction name="action9_Access_Control_Building"/>
+    <addaction name="action10_Special_Response_Team_Area"/>
+    <addaction name="action11_Central_Alarm_Station"/>
+    <addaction name="action12_Scrapyard"/>
+    <addaction name="action13_Radioactive_Waste_Site"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuElements"/>
+   <addaction name="menuJump_To"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -68,6 +119,263 @@
   <action name="actionAbout">
    <property name="text">
     <string>About OFV</string>
+   </property>
+  </action>
+  <action name="actionSingleFence">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Single</string>
+   </property>
+  </action>
+  <action name="actionDoubleFence">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Double</string>
+   </property>
+  </action>
+  <action name="actionTowerOn">
+   <property name="text">
+    <string>On</string>
+   </property>
+  </action>
+  <action name="actionTowerOff">
+   <property name="text">
+    <string>Off</string>
+   </property>
+  </action>
+  <action name="actionFlying_Arrows">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Flying Arrows</string>
+   </property>
+  </action>
+  <action name="actionBuilding_Signs">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Materials Signs</string>
+   </property>
+  </action>
+  <action name="actionTowers_and_Fence">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Towers and Fence</string>
+   </property>
+  </action>
+  <action name="actionSecurity_Signs">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Security Signs</string>
+   </property>
+  </action>
+  <action name="actionShapash_Facility_Entrance">
+   <property name="text">
+    <string>Shapash Facility Entrance</string>
+   </property>
+  </action>
+  <action name="actionStorage_Bunker">
+   <property name="text">
+    <string>Storage Bunker</string>
+   </property>
+  </action>
+  <action name="action1_Shapash_Facility_Entrance">
+   <property name="text">
+    <string>1. Shapash Facility Entrance</string>
+   </property>
+  </action>
+  <action name="action2_Storage_Bunker">
+   <property name="text">
+    <string>2. Storage Bunker</string>
+   </property>
+  </action>
+  <action name="action3_Research_Reactor">
+   <property name="text">
+    <string>3. Research Reactor</string>
+   </property>
+  </action>
+  <action name="action4_Reactor_Hall">
+   <property name="text">
+    <string>4. Reactor Hall</string>
+   </property>
+  </action>
+  <action name="action5_Fuel_Fabrication_Building">
+   <property name="text">
+    <string>5. Fuel Fabrication Building</string>
+   </property>
+  </action>
+  <action name="action6_Fuel_Fabrication_Pin_Assembly_Area">
+   <property name="text">
+    <string>6. Fuel Fabrication Pin Assembly Area</string>
+   </property>
+  </action>
+  <action name="action7_Fuel_Fabrication_Building_Mezzanine">
+   <property name="text">
+    <string>7. Fuel Fabrication Building Mezzanine</string>
+   </property>
+  </action>
+  <action name="action8_Fuel_Fabrication_Building_Basement">
+   <property name="text">
+    <string>8. Fuel Fabrication Building Basement</string>
+   </property>
+  </action>
+  <action name="action9_Access_Control_Building">
+   <property name="text">
+    <string>9. Access Control Building</string>
+   </property>
+  </action>
+  <action name="action10_Special_Response_Team_Area">
+   <property name="text">
+    <string>10. Special Response Team Area</string>
+   </property>
+  </action>
+  <action name="action11_Central_Alarm_Station">
+   <property name="text">
+    <string>11. Central Alarm Station</string>
+   </property>
+  </action>
+  <action name="action12_Scrapyard">
+   <property name="text">
+    <string>12. Scrapyard</string>
+   </property>
+  </action>
+  <action name="action13_Radioactive_Waste_Site">
+   <property name="text">
+    <string>13. Radioactive Waste Site</string>
+   </property>
+  </action>
+  <action name="actionNavigation_Map">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Navigation Map</string>
+   </property>
+  </action>
+  <action name="actionFuel_Assemblies">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Fuel Assemblies</string>
+   </property>
+  </action>
+  <action name="actionHot_Waste">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Hot Waste</string>
+   </property>
+  </action>
+  <action name="actionIrradiated_Fuel_Pins">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Irradiated Fuel Pins</string>
+   </property>
+  </action>
+  <action name="actionLiquid_Effluent">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Liquid Effluent</string>
+   </property>
+  </action>
+  <action name="actionExperimental_Materials">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Experimental Materials</string>
+   </property>
+  </action>
+  <action name="actionNuclear_Waste_Drums">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Nuclear Waste Drums</string>
+   </property>
+  </action>
+  <action name="actionResearch_Waste">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Research Waste</string>
+   </property>
+  </action>
+  <action name="actionSolid_Waste">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Solid Waste</string>
+   </property>
+  </action>
+  <action name="actionUranium_Oxide_Powders">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Uranium Oxide Powders</string>
+   </property>
+  </action>
+  <action name="actionUranium_Samples">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Uranium Samples</string>
+   </property>
+  </action>
+  <action name="actionAll">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>All On</string>
+   </property>
+  </action>
+  <action name="actionAll_Off">
+   <property name="text">
+    <string>All Off</string>
+   </property>
+  </action>
+  <action name="actionACB_Flow_Arrows">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>ACB Flow Arrows</string>
    </property>
   </action>
  </widget>

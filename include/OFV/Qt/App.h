@@ -69,28 +69,32 @@
 #ifndef OPEN_FACILITY_VIEWER_APP
 #define OPEN_FACILITY_VIEWER_APP
 
+#include <dtABC/application.h> 
 #include <dtGame/gameapplication.h>
 #include "MainWindow.h"
 #include <QtCore/QObject>
 
 
-class App : public QObject, public dtGame::GameApplication
+class App : public QObject, public dtGame::GameApplicationLoader
 {
    Q_OBJECT
    public:
-      App(int argc, char **argv, const std::string& configFilename = "config.xml");
- 
-      virtual void Config();
-
+      App(int argc, char **argv);
+	
+      virtual void Config( const std::string& configFilename = "config.xml");
+	  virtual ~App();
    signals:
       void FileLoaded(bool valid);
+	  
 
    protected:
-     virtual ~App();
+   
 
    private slots:
      void OnLoadFile(const QString& filename);
-
+	 void toggleVisibility(const QString &actorName, bool visible);
+	 void jumpTo(double x, double y, double z, double h, double p, double r);
+	 void onAppShutDown();
    private:
     MainWindow mMainWindow; 
 	dtCore::RefPtr<dtCore::Map> mMap;
