@@ -74,7 +74,7 @@
 #include <dtCore/refptr.h>
 
 class QFileInfo;
-
+class ImageViewer;
 
 class MainWindow : public QMainWindow
 {
@@ -92,6 +92,8 @@ public:
 signals:
    void LoadFile(const QString& filename);
    void toggleVisibility(const QString &actorName, bool visible);
+   void setTeleportActive(const QString &actorName, bool active);
+   
    void jumpTo(double x, double y, double z, double h, double p, double r);
    void appShutDown();
 
@@ -100,11 +102,19 @@ private slots:
    void on_actionOpen_triggered();
    void on_actionAbout_triggered();
    void on_actionControls_triggered();
-   void on_actionFlying_Arrows_triggered();   
    void on_actionACB_Flow_Arrows_triggered();
    void on_actionBuilding_Signs_triggered();
    void on_actionSecurity_Signs_triggered();
-   void on_actionTowers_and_Fence_triggered();
+   void on_actionPerimeter_Lighting_triggered();
+	void on_actionInner_Protected_Area_Fence_triggered();
+	void on_actionVehicle_Radiation_Portal_Monitors_triggered();
+	void on_actionMicrowave_Sensors_triggered();
+	void on_actionReactor_Building_triggered();
+	void on_actionFuel_Fabrication_Building_triggered();
+	void on_actionGuard_Towers_triggered();
+ 
+
+	//JUMP TO LOCATIONS
 	void on_action1_Shapash_Facility_Entrance_triggered();
 	void on_action2_Storage_Bunker_triggered();
 	void on_action3_Research_Reactor_triggered();
@@ -120,18 +130,13 @@ private slots:
 	void on_action13_Radioactive_Waste_Site_triggered();
 	void on_actionNavigation_Map_triggered();
 
-	void on_actionFuel_Assemblies_triggered();
-	void on_actionHot_Waste_triggered();
-	void on_actionIrradiated_Fuel_Pins_triggered();
-	void on_actionLiquid_Effluent_triggered();
-	void on_actionExperimental_Materials_triggered();
-	void on_actionNuclear_Waste_Drums_triggered();
-	void on_actionResearch_Waste_triggered();
-	void on_actionSolid_Waste_triggered();
-	void on_actionUranium_Oxide_Powders_triggered();
-	void on_actionUranium_Samples_triggered();
-	void on_actionAll_triggered();
-	void on_actionAll_Off_triggered();
+	//MATERIAL FLOW IMAGES
+	void on_actionWaste_triggered();
+	void on_actionFreshFuel_triggered();
+	void on_actionAllMaterials_triggered();
+	void on_actionOxides_triggered();
+	void on_actionTargets_triggered();
+
 
 	
 
@@ -139,8 +144,12 @@ private:
   Ui::MainWindow ui; 
 
   QFileInfo* mLastMapInfo;
-  void refreshArrows();
-  void checkAllArrows(bool check);
+  ImageViewer* mImageViewerWaste;
+  ImageViewer* mImageViewerOxides;
+  ImageViewer* mImageViewerFreshFuel;
+  ImageViewer* mImageViewerTargets;
+  ImageViewer* mImageViewerAllMaterials;
+
 
 };
 #endif // MainWindow_h__

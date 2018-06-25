@@ -1,7 +1,7 @@
 //----------------------------------*-C++-*----------------------------------//
 // Open Facility Viewer, an application for 3D walk-throughs of facilities
 //
-// Copyright (C) 2016, Lawrence Livermore National Security, LLC.
+// Copyright (C) 2018, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory.
 //
@@ -46,59 +46,40 @@
 // along with Open Facility Viewer (OFV). If not, see <http://www.gnu.org/licenses/>
 //
 //---------------------------------------------------------------------------//
-// 
-// OFV - App
-// 
-// portions taken from 'testQt' in 
-// Delta3d Open Source Game and Simulation Engine
-// use 'The MIT License'
-//
-// For portions taken from 'testQt':
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-//
-//---------------------------------------------------------------------------//
 
-#ifndef OPEN_FACILITY_VIEWER_APP
-#define OPEN_FACILITY_VIEWER_APP
+#ifndef ImageViewer_H
+#define ImageViewer_H
 
-#include <dtABC/application.h> 
-#include <dtGame/gameapplication.h>
-#include "MainWindow.h"
-#include <QtCore/QObject>
+#include <QtGui\QMainWindow>
 
 
-class App : public QObject, public dtGame::GameApplicationLoader
+QT_BEGIN_NAMESPACE
+class QAction;
+class QLabel;
+class QMenu;
+class QScrollArea;
+class QScrollBar;
+QT_END_NAMESPACE
+
+
+class ImageViewer : public QMainWindow
 {
-   Q_OBJECT
-   public:
-      App(int argc, char **argv);
-	
-      virtual void Config( const std::string& configFilename = "config.xml");
-	  virtual ~App();
-   signals:
-      void FileLoaded(bool valid);
-	  
+    Q_OBJECT
 
-   protected:
-   
+public:
+    ImageViewer(QMainWindow* parent);
+	void open(QString fileName, QString windowTitle);
+private slots:
 
-   private slots:
-     void OnLoadFile(const QString& filename);
-	 void toggleVisibility(const QString &actorName, bool visible);
-	 void setTeleportActive(const QString & actorName, bool active);
-	 void jumpTo(double x, double y, double z, double h, double p, double r);
-	 void onAppShutDown();
-   private:
-    MainWindow mMainWindow; 
-	dtCore::RefPtr<dtCore::Map> mMap;
+
+
+private:
+ 
+    QLabel *imageLabel;
+    QScrollArea *scrollArea;
+    double scaleFactor;
+
 };
 
-#endif // OPEN_FACILITY_VIEWER_APP
+
+#endif //ImageViewer_H

@@ -79,6 +79,19 @@ namespace dtCore
 	class LogicalAxis;
 	class Isector;
 }
+
+enum
+{
+	COLLISION_CATEGORY_BIT_FAC_05_ON =		0x00020000,
+	COLLISION_CATEGORY_BIT_FAC_05_OFF =		0x00010000,
+	COLLISION_CATEGORY_BIT_FAC_06_ON =		0x00080000,
+	COLLISION_CATEGORY_BIT_FAC_06_OFF =		0x00040000,
+	COLLISION_CATEGORY_BIT_FENCE_INNER =	0x00100000,
+	COLLISION_CATEGORY_BIT_GUARDTOWERS =	0x00400000,
+	COLLISION_CATEGORY_BIT_OBJECT =			0x00000020
+
+};
+
 /**
 * A motion model that simulates the action of walking or driving.
 */
@@ -128,6 +141,9 @@ public:
 
 	void toggleCollision();
 	void setCollsionBits(unsigned long bits);
+	unsigned long getCollsionBits();
+
+	inline bool collisionEnabled() { return mCollisionOn; };
 	/**
 	* Sets the input axes to a set of default mappings for mouse
 	* and keyboard.

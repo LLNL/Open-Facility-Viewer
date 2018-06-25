@@ -57,6 +57,8 @@
 #include <dtGame/baseinputcomponent.h>
 #include <QtCore/QMap>
 #include <QtCore/QSize>
+#include <QtCore/QVector>
+#include <QtCore/QString>
 class FlyLimitMotionModel;
 class QProgressDialog;
 
@@ -80,7 +82,17 @@ namespace osg
 }
 
 
-
+class InteriorMap {
+	public:
+		osg::Vec2 origin;
+		osg::Vec2 max;
+		osg::Vec2 textureSize;
+		osg::BoundingBoxd renderBox;
+		osg::ref_ptr<osg::Texture2D> texture;
+		float distance;
+		bool mapVisible;
+		QString interiorModel;
+};
 
 class OFV_GAME_EXPORT OFVInputComponent : public dtGame::BaseInputComponent
 {
@@ -96,6 +108,8 @@ public:
 	virtual bool HandleKeyPressed(const dtCore::Keyboard* keyboard, int key);
 	//virtual bool HandleKeyReleased(const dtCore::Keyboard* keyboard, int key);
 	void setActorVisible(std::string actorName, bool visible);
+	void setActorVisibleOverride(std::string actorName, bool visible);
+	void setTeleportActive(std::string actorName, bool active);
 	dtCore::DeltaDrawable* getActorDrawable(std::string actorName);
 	dtCore::Transformable* getActorTransformable(std::string actorName);
 	void setFOV(double diff);
@@ -107,17 +121,27 @@ protected:
 
 
 private:
-	osg::Geode* loadOSGImage(std::string textureFile, osg::Vec2 textureCoordinates, osg::Vec2 textureSize);
-	osg::Texture2D* loadTexture(const std::string& path);
+	osg::Geode* loadOSGImage(std::string textureFile, osg::Vec2 textureCoordinates, osg::Vec2 textureSize, const osg::Vec4d& borderColor = osg::Vec4d(0, 0, 0, 0));
+	osg::Texture2D* loadTexture(const std::string& path, const osg::Vec4d& borderColor);
 	void applyTextureOffset(osg::Geode* geode, osg::Vec2 textureOffset, osg::Vec2 GeomSize, osg::Vec2 imageSize);
+	void updateMapWithNewTexture(osg::Texture2D* tex, osg::Geode* mapQuad);
 
 	void teleportToPlayerStart();
 	void printPlayerLocation();
+	void fixTimeZone();
 	void createMiniMap();
 	void createLogo();
 	void createHUD();
 	void updateMap();
-	void checkModelVisibility();
+	void checkVisibilitys();
+
+	void updateModelDistanceVisibility();
+	void updateModelVisibility();
+	
+	
+	void updateMapVisibility(osg::Vec3 trans);
+	void setVisibilityAllInteriorMaps(bool visible);
+	void checkPlayerElevation();
 	void checkWindowSizeChanged();
 	void switchMotionModels();
 	void multiplyMotionModelSpeed(float factor);
@@ -127,7 +151,8 @@ private:
 	dtCore::RefPtr<FlyLimitMotionModel> mFlyMM;
 	osg::ref_ptr<osg::Geode> mMapGeode;
 	osg::ref_ptr<osg::Geode> mDot;
-	
+	osg::ref_ptr<osg::Geode> mArrow;
+
 	osg::ref_ptr<osg::PositionAttitudeTransform> mLogotrans;
 	osg::ref_ptr<osg::Camera> mHUD;
 	osg::Vec2 mMapWindowSize;
@@ -138,15 +163,27 @@ private:
 	QSize mLastWindowSize;
 	QProgressDialog* mProgressDialog;
 
-	QMap<QString, osg::Vec3> mModelRenderDistance;
+	QMap<QString, InteriorMap*> mInteriorMaps;
+	QMap<QString, osg::Vec3> mModelRenderPoint;
+	QMap<QString, float> mModelRenderDistance;
+	QVector<osg::BoundingBoxd> mElevationLimitBoxes;
+	QVector<double> mElevationLimits;
+	double mGlobalElevationLimit;
 
 	float mCorrectionX;
 	float mCorrectionY;
 	float mCorrectionSizeX;
 	float mCorrectionSizeY;
+	
+	osg::ref_ptr<osg::Texture2D> mMainMapTexture;
+	bool mInteriorMap;
 
 	enum MapDebugLevel {MAP_X_DEBUG, MAP_Y_DEBUG, MAP_NO_DEBUG};
 	MapDebugLevel mMapDebug;
+
+	//overrides to prevent optimized visibility toggles.
+	bool mReactorBuildingEnabled;
+	bool mFuelFabEnabled;
 };
 
 #endif

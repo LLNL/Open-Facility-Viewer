@@ -1,7 +1,7 @@
 //----------------------------------*-C++-*----------------------------------//
 // Open Facility Viewer, an application for 3D walk-throughs of facilities
 //
-// Copyright (C) 2016, Lawrence Livermore National Security, LLC.
+// Copyright (C) 2018, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory.
 //
@@ -67,17 +67,21 @@
 //---------------------------------------------------------------------------//
 
 #include <OFV/Qt/MainWindow.h>
+#include <OFV/Qt/ImageViewer.h>
+
 #include <dtUtil/datapathutils.h>
 #include <QtGui/QFileDialog>
 #include <QtGui/QMessageBox>
 #include <QtGui/QKeyEvent>
 #include <iostream> 
 
+
+
 #define ABOUT_OFV "Open Facility Viewer, an application for 3D walk-throughs of facilities\r\n\
 \r\n\
-Version 1.6.4\
+Version 2.0.4\
 \r\n\
-Copyright (C) 2016, Lawrence Livermore National Security, LLC.\r\n\
+Copyright (C) 2018, Lawrence Livermore National Security, LLC.\r\n\
 \r\n\
 Produced at the Lawrence Livermore National Laboratory.\r\n\
 \r\n\
@@ -103,6 +107,12 @@ LEFT mouse button - look direction\r\n\
 MainWindow::MainWindow(QMainWindow* parent)
 : QMainWindow(parent)
 , mLastMapInfo(NULL)
+, mImageViewerWaste(NULL)
+, mImageViewerOxides(NULL)
+, mImageViewerFreshFuel(NULL)
+, mImageViewerTargets(NULL)
+, mImageViewerAllMaterials(NULL)
+
 {
   ui.setupUi(this);
 
@@ -169,87 +179,52 @@ void MainWindow::on_actionAbout_triggered()
 }
 ////////////////////////////////////////////////////////////////////////////////
 
-void MainWindow::on_actionFuel_Assemblies_triggered()
-{
-	emit toggleVisibility("arrow_01", ui.actionFuel_Assemblies->isChecked());
-}
 
-void MainWindow::on_actionHot_Waste_triggered()
+void MainWindow::on_actionWaste_triggered()
 {
-	emit toggleVisibility("arrow_02", ui.actionHot_Waste->isChecked());
+	if (mImageViewerWaste == NULL)
+	{
+		mImageViewerWaste = new ImageViewer(this);
+		mImageViewerWaste->open("Flow_Waste.png", "Flow Diagram - Waste");
+	}
+	mImageViewerWaste->show();
 }
-void MainWindow::on_actionIrradiated_Fuel_Pins_triggered()
+void MainWindow::on_actionFreshFuel_triggered()
 {
-	emit toggleVisibility("arrow_03", ui.actionIrradiated_Fuel_Pins->isChecked());
+	if (mImageViewerFreshFuel == NULL)
+	{
+		mImageViewerFreshFuel = new ImageViewer(this);
+		mImageViewerFreshFuel->open("Flow_Fresh_Fuel.png", "Flow Diagram - Fresh Fuel");
+	}
+	mImageViewerFreshFuel->show();
 }
-void MainWindow::on_actionLiquid_Effluent_triggered()
+void MainWindow::on_actionAllMaterials_triggered()
 {
-	emit toggleVisibility("arrow_04", ui.actionLiquid_Effluent->isChecked());
+	if (mImageViewerAllMaterials == NULL)
+	{
+		mImageViewerAllMaterials = new ImageViewer(this);
+		mImageViewerAllMaterials->open("Flow_All_Materials.png", "Flow Diagram - All Materials");
+	}
+	mImageViewerAllMaterials->show();
 }
-void MainWindow::on_actionExperimental_Materials_triggered()
+void MainWindow::on_actionOxides_triggered()
 {
-	emit toggleVisibility("arrow_05", ui.actionExperimental_Materials->isChecked());
+	if (mImageViewerOxides == NULL)
+	{
+		mImageViewerOxides = new ImageViewer(this);
+		mImageViewerOxides->open("Flow_Oxides.png", "Flow Diagram - Oxides");
+	}
+	mImageViewerOxides->show();
 }
-void MainWindow::on_actionNuclear_Waste_Drums_triggered()
+void MainWindow::on_actionTargets_triggered()
 {
-	emit toggleVisibility("arrow_06", ui.actionNuclear_Waste_Drums->isChecked());
+	if (mImageViewerTargets == NULL)
+	{
+		mImageViewerTargets = new ImageViewer(this);
+		mImageViewerTargets->open("Flow_Targets.png", "Flow Diagram - Targets");
+	}
+	mImageViewerTargets->show();
 }
-void MainWindow::on_actionResearch_Waste_triggered()
-{
-	emit toggleVisibility("arrow_07", ui.actionResearch_Waste->isChecked());
-}
-void MainWindow::on_actionSolid_Waste_triggered()
-{
-	emit toggleVisibility("arrow_08", ui.actionSolid_Waste->isChecked());
-}
-void MainWindow::on_actionUranium_Oxide_Powders_triggered()
-{
-	emit toggleVisibility("arrow_09", ui.actionUranium_Oxide_Powders->isChecked());
-}
-void MainWindow::on_actionUranium_Samples_triggered()
-{
-	emit toggleVisibility("arrow_10", ui.actionUranium_Samples->isChecked());
-}
-void MainWindow::on_actionAll_triggered()
-{
-	checkAllArrows(true);
-	refreshArrows();
-}
-void MainWindow::on_actionAll_Off_triggered()
-{
-	checkAllArrows(false);
-	refreshArrows();
-}
-void MainWindow::checkAllArrows(bool check)
-{
-	ui.actionFuel_Assemblies->setChecked(check);
-	ui.actionHot_Waste->setChecked(check);
-	ui.actionIrradiated_Fuel_Pins->setChecked(check);
-	ui.actionLiquid_Effluent->setChecked(check);
-	ui.actionExperimental_Materials->setChecked(check);
-	ui.actionNuclear_Waste_Drums->setChecked(check);
-	ui.actionResearch_Waste->setChecked(check);
-	ui.actionSolid_Waste->setChecked(check);
-	ui.actionUranium_Oxide_Powders->setChecked(check);
-	ui.actionUranium_Samples->setChecked(check);
-
-}
-void MainWindow::refreshArrows()
-{
-	
-	emit toggleVisibility("arrow_01", ui.actionFuel_Assemblies->isChecked());
-	emit toggleVisibility("arrow_02", ui.actionHot_Waste->isChecked());
-	emit toggleVisibility("arrow_03", ui.actionIrradiated_Fuel_Pins->isChecked());
-	emit toggleVisibility("arrow_04", ui.actionLiquid_Effluent->isChecked());
-	emit toggleVisibility("arrow_05", ui.actionExperimental_Materials->isChecked());
-	emit toggleVisibility("arrow_06", ui.actionNuclear_Waste_Drums->isChecked());
-	emit toggleVisibility("arrow_07", ui.actionResearch_Waste->isChecked());
-	emit toggleVisibility("arrow_08", ui.actionSolid_Waste->isChecked());
-	emit toggleVisibility("arrow_09", ui.actionUranium_Oxide_Powders->isChecked());
-	emit toggleVisibility("arrow_10", ui.actionUranium_Samples->isChecked());
-}
-
-
 
 /////////////////////////////////////////////////////////////////////////////
 void MainWindow::on_actionControls_triggered()
@@ -257,27 +232,181 @@ void MainWindow::on_actionControls_triggered()
 	QMessageBox::about(this, "OFV Controls", HELP_OFV);
 	
 }
-void MainWindow::on_actionFlying_Arrows_triggered()
-{
 
-	emit toggleVisibility("fac_10", ui.actionFlying_Arrows->isChecked());
-}
 void MainWindow::on_actionACB_Flow_Arrows_triggered()
 {
 	emit toggleVisibility("acbArrows", ui.actionACB_Flow_Arrows->isChecked());
 }
 void MainWindow::on_actionBuilding_Signs_triggered()
 {
-	emit toggleVisibility("fac_11", ui.actionBuilding_Signs->isChecked());
+	emit toggleVisibility("fixed_materials_signs", ui.actionBuilding_Signs->isChecked());
+	emit toggleVisibility("materials_fac_05", ui.actionReactor_Building->isChecked() && ui.actionBuilding_Signs->isChecked());
+	emit toggleVisibility("materials_fac_06", ui.actionFuel_Fabrication_Building->isChecked() && ui.actionBuilding_Signs->isChecked());
 }
 void MainWindow::on_actionSecurity_Signs_triggered()
 {
-	emit toggleVisibility("fac_13", ui.actionSecurity_Signs->isChecked());
+	emit toggleVisibility("fixed_security_signs", ui.actionSecurity_Signs->isChecked());
+	emit toggleVisibility("security_signs_fence_admin", ui.actionSecurity_Signs->isChecked());
+	emit toggleVisibility("security_signs_lighting_admin", ui.actionPerimeter_Lighting->isChecked() && ui.actionSecurity_Signs->isChecked());
+	emit toggleVisibility("security_signs_lighting_inner", ui.actionPerimeter_Lighting->isChecked() && ui.actionSecurity_Signs->isChecked());
+	emit toggleVisibility("security_signs_fence_inner", ui.actionInner_Protected_Area_Fence->isChecked() && ui.actionSecurity_Signs->isChecked());
+	emit toggleVisibility("security_signs_isolation", ui.actionInner_Protected_Area_Fence->isChecked() && ui.actionSecurity_Signs->isChecked());
+	emit toggleVisibility("security_signs_rad_monitors", ui.actionVehicle_Radiation_Portal_Monitors->isChecked() && ui.actionSecurity_Signs->isChecked());
+	emit toggleVisibility("security_signs_microwave", ui.actionMicrowave_Sensors->isChecked() && ui.actionSecurity_Signs->isChecked());
+	emit toggleVisibility("security_signs_fac_05", ui.actionReactor_Building->isChecked() && ui.actionSecurity_Signs->isChecked());
+	emit toggleVisibility("security_signs_fac_06", ui.actionFuel_Fabrication_Building->isChecked() && ui.actionSecurity_Signs->isChecked());
+	emit toggleVisibility("security_signs_towers", ui.actionGuard_Towers->isChecked() && ui.actionSecurity_Signs->isChecked());
 }
-void MainWindow::on_actionTowers_and_Fence_triggered()
+void MainWindow::on_actionPerimeter_Lighting_triggered()
 {
-	emit toggleVisibility("fac_12", ui.actionTowers_and_Fence->isChecked());
-	emit toggleVisibility("fac1_fence", ui.actionTowers_and_Fence->isChecked());  
+	
+	emit toggleVisibility("switch_lighting_admin", ui.actionPerimeter_Lighting->isChecked());
+	emit toggleVisibility("switch_lighting_outer", ui.actionPerimeter_Lighting->isChecked());
+	emit toggleVisibility("security_signs_lighting_admin", ui.actionPerimeter_Lighting->isChecked() && ui.actionSecurity_Signs->isChecked());
+	emit toggleVisibility("security_signs_lighting_inner", ui.actionPerimeter_Lighting->isChecked() && ui.actionSecurity_Signs->isChecked());
+
+	emit toggleVisibility("switch_microwave_nolights", ui.actionMicrowave_Sensors->isChecked() && !ui.actionPerimeter_Lighting->isChecked());
+
+}
+void MainWindow::on_actionInner_Protected_Area_Fence_triggered()
+{
+	emit toggleVisibility("fac1_fence", ui.actionInner_Protected_Area_Fence->isChecked());
+
+	//signs
+	emit toggleVisibility("security_signs_fence_inner", ui.actionInner_Protected_Area_Fence->isChecked() && ui.actionSecurity_Signs->isChecked());
+	emit toggleVisibility("security_signs_isolation", ui.actionInner_Protected_Area_Fence->isChecked() && ui.actionSecurity_Signs->isChecked());
+	
+	//colliders
+	emit toggleVisibility("Colliders_fence_inner", ui.actionInner_Protected_Area_Fence->isChecked());
+}
+void MainWindow::on_actionVehicle_Radiation_Portal_Monitors_triggered()
+{
+	emit toggleVisibility("switch_rad_portal", ui.actionVehicle_Radiation_Portal_Monitors->isChecked());
+	emit toggleVisibility("security_signs_rad_monitors", ui.actionVehicle_Radiation_Portal_Monitors->isChecked() && ui.actionSecurity_Signs->isChecked());
+	
+}
+void MainWindow::on_actionMicrowave_Sensors_triggered()
+{
+	
+	emit toggleVisibility("switch_microwave", ui.actionMicrowave_Sensors->isChecked());
+	emit toggleVisibility("security_signs_microwave", ui.actionMicrowave_Sensors->isChecked() && ui.actionSecurity_Signs->isChecked());
+	
+	emit toggleVisibility("switch_microwave_nolights", ui.actionMicrowave_Sensors->isChecked() && !ui.actionPerimeter_Lighting->isChecked());
+
+
+}
+void MainWindow::on_actionReactor_Building_triggered()
+{
+	//OVERRIDE CALL - HANDLES INTERIORS
+	emit toggleVisibility("fac_05", ui.actionReactor_Building->isChecked());
+
+	//ground - use model "OFF" when checked
+	emit toggleVisibility("switch_ground_reactor_OFF", !ui.actionReactor_Building->isChecked());
+
+	//signs
+	emit toggleVisibility("materials_fac_05", ui.actionReactor_Building->isChecked() && ui.actionBuilding_Signs->isChecked());
+	emit toggleVisibility("security_signs_fac_05", ui.actionReactor_Building->isChecked() && ui.actionSecurity_Signs->isChecked());
+	emit toggleVisibility("topsigns_fac_05", ui.actionReactor_Building->isChecked());
+
+	//arrows
+	emit toggleVisibility("switch_arrows_reactor", ui.actionReactor_Building->isChecked());
+
+	//COLLIDERS
+	emit toggleVisibility("Colliders_fac_05_OFF", !ui.actionReactor_Building->isChecked());
+	emit toggleVisibility("Colliders_fac_05_ON", ui.actionReactor_Building->isChecked());
+
+	//doors
+	QStringList doors;
+	doors << "13" << "25" << "26";
+	for (int i = 48; i <= 78; i++)
+	{
+		doors << QString::number(i);
+	}
+	doors << "81" << "82" << "83";
+	for (int i = 85; i <= 98; i++)
+	{
+		doors << QString::number(i);
+	}
+	foreach(QString s, doors)
+	{
+		emit toggleVisibility("door_" + s, ui.actionReactor_Building->isChecked());
+	}
+
+	//stairwells
+	
+	emit toggleVisibility("reactor_1_to_2_UP", ui.actionReactor_Building->isChecked());
+	emit toggleVisibility("reactor_1_to_G _DOWN", ui.actionReactor_Building->isChecked());
+	emit toggleVisibility("reactor_2_to_1_DOWN", ui.actionReactor_Building->isChecked());
+	emit toggleVisibility("reactor_2_to_3_UP", ui.actionReactor_Building->isChecked());
+	emit toggleVisibility("reactor_3_to_2_DOWN", ui.actionReactor_Building->isChecked());
+	emit toggleVisibility("reactor_B_to_G_UP", ui.actionReactor_Building->isChecked());
+	emit toggleVisibility("reactor_G_to_1 _UP", ui.actionReactor_Building->isChecked());
+	emit toggleVisibility("reactor_G_to_B _DOWN", ui.actionReactor_Building->isChecked());
+
+	emit setTeleportActive("reactor_hall_basement_stairdown", ui.actionReactor_Building->isChecked());
+	emit setTeleportActive("reactor_hall_basement_stairup", ui.actionReactor_Building->isChecked());
+	emit setTeleportActive("reactor_hall_stairdown", ui.actionReactor_Building->isChecked());
+	emit setTeleportActive("reactor_hall_stairup", ui.actionReactor_Building->isChecked());
+	
+}
+void MainWindow::on_actionFuel_Fabrication_Building_triggered()
+{
+	// OVERRIDE CALL - HANDLES INTERIORS
+	emit toggleVisibility("fac_06", ui.actionFuel_Fabrication_Building->isChecked());
+
+	//ground - use model "OFF" when checked
+	emit toggleVisibility("switch_ground_fab_OFF", !ui.actionFuel_Fabrication_Building->isChecked());
+	emit toggleVisibility("switch_ground_fab_ON", ui.actionFuel_Fabrication_Building->isChecked());
+
+	//signs
+	emit toggleVisibility("security_signs_fac_06", ui.actionFuel_Fabrication_Building->isChecked() && ui.actionSecurity_Signs->isChecked());
+	emit toggleVisibility("materials_fac_06", ui.actionFuel_Fabrication_Building->isChecked() && ui.actionBuilding_Signs->isChecked());
+	emit toggleVisibility("topsigns_fac_06", ui.actionFuel_Fabrication_Building->isChecked());
+
+	//arrows
+	emit toggleVisibility("switch_arrows_fab", ui.actionFuel_Fabrication_Building->isChecked());
+
+	//COLLIDERS
+	emit toggleVisibility("Colliders_fac_06_OFF", !ui.actionFuel_Fabrication_Building->isChecked());
+	emit toggleVisibility("Colliders_fac_06_ON", ui.actionFuel_Fabrication_Building->isChecked());
+
+	//stairwells
+	
+	emit setTeleportActive("stairdown_1", ui.actionFuel_Fabrication_Building->isChecked());
+	emit setTeleportActive("stairdown_basement", ui.actionFuel_Fabrication_Building->isChecked());
+	emit setTeleportActive("stairdown_basement_02", ui.actionFuel_Fabrication_Building->isChecked());
+	emit setTeleportActive("stairup_1", ui.actionFuel_Fabrication_Building->isChecked());
+	emit setTeleportActive("stairup_basement_01", ui.actionFuel_Fabrication_Building->isChecked());
+	emit setTeleportActive("stairup_basement_02", ui.actionFuel_Fabrication_Building->isChecked());
+	
+
+	//doors
+	QStringList doors;
+	doors << "12";
+	for (int i = 16; i <= 23; i++)
+	{
+		doors << QString::number(i);
+	}
+	for (int i = 27; i <= 47; i++)
+	{
+		doors << QString::number(i);
+	}
+	doors << "84";
+
+	foreach(QString s, doors)
+	{
+		emit toggleVisibility("door_" + s, ui.actionFuel_Fabrication_Building->isChecked());
+	}
+}
+void MainWindow::on_actionGuard_Towers_triggered()
+{
+	emit toggleVisibility("fac_12", ui.actionGuard_Towers->isChecked());
+	emit toggleVisibility("security_signs_towers", ui.actionGuard_Towers->isChecked() && ui.actionSecurity_Signs->isChecked());
+	emit toggleVisibility("switch_arrows_towers", ui.actionGuard_Towers->isChecked());
+
+	//COLLIDERS
+	emit toggleVisibility("Colliders_guard_tower", ui.actionGuard_Towers->isChecked());
+	
 }
 void MainWindow::on_actionNavigation_Map_triggered()
 {
@@ -295,15 +424,15 @@ void MainWindow::on_action2_Storage_Bunker_triggered()
 }
 void MainWindow::on_action3_Research_Reactor_triggered()
 {
-	emit jumpTo(44.0217, 32.4428, 1.55965,179.433, 0, 0);
+	emit jumpTo(77.4411, 9.67979, 1.55965, 90.0, 0, 0);
 }
 void MainWindow::on_action4_Reactor_Hall_triggered()
 {
-	emit jumpTo(43.7858, 14.2999, 1.51068,152.728, 0, 0);
+	emit jumpTo(46.4216, 8.49228, 9.8967,80.0, 0, 0);
 }
 void MainWindow::on_action5_Fuel_Fabrication_Building_triggered()
 {
-	emit jumpTo(86.8155, -30.6112, 1.5266, 90.9404, 0, 0);
+	emit jumpTo(82.307, -34.597, 1.55964, 90.9404, 0, 0);
 }
 void MainWindow::on_action6_Fuel_Fabrication_Pin_Assembly_Area_triggered()
 {
@@ -331,7 +460,7 @@ void MainWindow::on_action11_Central_Alarm_Station_triggered()
 }
 void MainWindow::on_action12_Scrapyard_triggered()
 {
-	emit jumpTo(72.4359, 10.051, 1.44134, -90.5736, 0, 0);
+	emit jumpTo(76.0858, 1.17021, 1.55965, -61.0, 0, 0);
 }
 void MainWindow::on_action13_Radioactive_Waste_Site_triggered()
 {

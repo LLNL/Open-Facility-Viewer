@@ -100,11 +100,11 @@ HumanMotionModel::HumanMotionModel(float pHeight,
 	, mMaximumTurnSpeed(60.0f)
 	, mMaximumSidestepSpeed(1.0f)
 	, mHeightAboveTerrain(1.4f)
-	, mMaximumStepUpDistance(1.0f)
+	, mMaximumStepUpDistance(0.1f)
 	, mDownwardSpeed(0.0f)
 	, mIsector(NULL)
 	, mCollisionOn(true)
-	, mMinimumHeight(0.0)
+	, mMinimumHeight(1.5)
 	, mLastLookLeftRight(-100000.0)
 	, mLastLookUpDown(-100000.0)
 	, mMinLookUpDown(-30.0)
@@ -112,6 +112,8 @@ HumanMotionModel::HumanMotionModel(float pHeight,
 	, mCollider(pHeight, pRadius, stepUpHeight, 0.0f, pScene)
 {
 	RegisterInstance(this);
+
+
 
 	if (keyboard != NULL && mouse != NULL)
 	{
@@ -122,7 +124,11 @@ HumanMotionModel::HumanMotionModel(float pHeight,
 
 	mCollider.SetCollisionBitsForFeet(0x00000020);
 	mCollider.SetCollisionBitsForTorso(0x00000020);
-	mCollider.SetSlideThreshold(100000.0);
+	mCollider.SetSlideThreshold(0.1);
+	mCollider.SetSlideSpeed(5.0); 
+	mCollider.SetJumpSpeed(0.0);
+	//mCollider.SetSmoothingSpeed(20.0);
+
 	mMouse = mouse;
 	mKeyboard = keyboard;
 
@@ -170,6 +176,10 @@ dtCore::Scene* HumanMotionModel::GetScene()
 void HumanMotionModel::toggleCollision()
 {
 	mCollisionOn = !mCollisionOn;
+}
+unsigned long HumanMotionModel::getCollsionBits()
+{
+	return mCollider.GetCollisionBitsForFeet();
 }
 void HumanMotionModel::setCollsionBits(unsigned long bits)
 {
@@ -522,7 +532,7 @@ void HumanMotionModel::OnMessage(dtCore::Base::MessageData* data)
 	if (GetTarget() != 0 &&
 		IsEnabled() &&
 		data->message == dtCore::System::MESSAGE_POST_EVENT_TRAVERSAL/*MESSAGE_PRE_FRAME*/)
-	{
+	{	
 		double deltaTime = *static_cast<double*>(data->userData);
 
 		dtCore::Transform transform;
@@ -559,7 +569,7 @@ void HumanMotionModel::OnMessage(dtCore::Base::MessageData* data)
 		}
 		
 
-		//hpr[1] = 0.0f;
+		
 		hpr[2] = 0.0f;
 
 
@@ -669,7 +679,7 @@ void HumanMotionModel::OnMessage(dtCore::Base::MessageData* data)
 
 			 if(xyz[2] < mMinimumHeight)
 			 {
-				xyz[2] = mMinimumHeight + .75;
+				xyz[2] = mMinimumHeight;
 			 }
 			//std::cout << "h = " << xyz[2] << "\n";
 			transform.SetTranslation(xyz);
@@ -735,8 +745,6 @@ void HumanMotionModel::PerformTranslation(const double deltaTime, float sideStep
 	osg::Vec3 last = currentXYZ;
 	bool jump = false;
 	currentXYZ = mCollider.Update(currentXYZ, velocity, deltaTime, jump);
-
-	
 
 	// apply changes (new position)
 	transform.SetTranslation(currentXYZ);

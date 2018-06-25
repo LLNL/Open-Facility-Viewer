@@ -13,11 +13,11 @@ Currently you must provide this. There are many examples in the Delta3D project.
 
 * Fully tested with Visual Studio 2015 64-bit
 
-* Requires CMake 2.8.12 for build system
+* Requires CMake 3.7 for build system
 
 Dependencies:
 - Delta3D v2.8 (64 bit build - see ext/ for patch)
-- Qt 4.7.3 (64 bit build)
+- Qt 4.8.6 (64 bit build)
 
 Delta3D has many dependencies. Get the matching Delta3D 2.8 dependency builds here:
 https://sourceforge.net/projects/delta3d/files/delta3d-dependencies/2.9.0/Windows/delta3d-2.9.0-ext-msvc14.0.zip/download

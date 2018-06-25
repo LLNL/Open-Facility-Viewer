@@ -111,7 +111,19 @@ void App::toggleVisibility(const QString & actorName, bool visible)
 {
 	dtGame::GMComponent *comp = GetGameManager()->GetComponentByName("Input Component");
 	OFVInputComponent*  inputcomp = static_cast<OFVInputComponent*>(comp);
-	inputcomp->setActorVisible(actorName.toStdString(), visible);
+
+	if(actorName == "fac_05" || actorName == "fac_06")
+		inputcomp->setActorVisibleOverride(actorName.toStdString(), visible);
+	else
+		inputcomp->setActorVisible(actorName.toStdString(), visible);
+}
+void App::setTeleportActive(const QString & actorName, bool active)
+{
+	dtGame::GMComponent *comp = GetGameManager()->GetComponentByName("Input Component");
+	OFVInputComponent*  inputcomp = static_cast<OFVInputComponent*>(comp);
+
+	inputcomp->setTeleportActive(actorName.toStdString(), active);
+
 }
 void App::jumpTo(double x, double y, double z, double h, double p, double r)
 {
@@ -124,19 +136,21 @@ void App::jumpTo(double x, double y, double z, double h, double p, double r)
 void App::Config(const std::string& configFileName)
 { 
    GameApplicationLoader::Config(configFileName);
+
    connect(&mMainWindow, SIGNAL(LoadFile(const QString&)), this, SLOT(OnLoadFile(const QString&)));
    connect(&mMainWindow, SIGNAL(toggleVisibility(const QString&, bool)), this, SLOT(toggleVisibility(const QString&, bool)));
+   connect(&mMainWindow, SIGNAL(setTeleportActive(const QString&, bool)), this, SLOT(setTeleportActive(const QString&, bool)));
    connect(&mMainWindow, SIGNAL(jumpTo(double, double, double, double, double, double)), 
 				   this, SLOT(jumpTo(double, double, double, double, double, double)));
    connect(this, SIGNAL(FileLoaded(bool)), &mMainWindow, SLOT(OnFileLoaded(bool)));
    connect(&mMainWindow, SIGNAL(appShutDown()), this, SLOT(onAppShutDown()));
 
    osg::DisplaySettings::instance()->setNumMultiSamples( 8 ); 
-
+   
    dtQt::OSGGraphicsWindowQt* osgGraphWindow = dynamic_cast<dtQt::OSGGraphicsWindowQt*>(GetGameManager()->GetApplication().GetWindow()->GetOsgViewerGraphicsWindow());
    mMainWindow.SetGraphicsWidget(osgGraphWindow->GetQGLWidget());
    
-//   dtUtil::Log::GetInstance().SetLogLevel(dtUtil::Log::LOG_DEBUG);
+   //dtUtil::Log::GetInstance().SetLogLevel(dtUtil::Log::LOG_DEBUG);
 
    QGLFormat fmt;
    QGLFormat::setDefaultFormat(fmt); 

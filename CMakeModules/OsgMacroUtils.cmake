@@ -161,7 +161,7 @@ MACRO(SETUP_PLUGIN PLUGIN_NAME)
         ELSE(${CMAKE_MAJOR_VERSION} EQUAL 2 AND ${CMAKE_MINOR_VERSION} GREATER 4)
             IF(OSG_MSVC_VERSIONED_DLL) 
 
-                #this is a hack... the build place is set to lib/<debug or release> by LIBARARY_OUTPUT_PATH equal to OUTPUT_LIBDIR
+                #_FORCE_ the build place is set to lib/<debug or release> by LIBARARY_OUTPUT_PATH equal to OUTPUT_LIBDIR
                 #the .lib will be crated in ../ so going straight in lib by the IMPORT_PREFIX property
                 #because we want dll placed in OUTPUT_BINDIR ie the bin folder sibling of lib, we can use ../../bin to go there,
                 #it is hardcoded, we should compute OUTPUT_BINDIR position relative to OUTPUT_LIBDIR ... to be implemented

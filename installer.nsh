@@ -3,12 +3,6 @@
 ;Also Orignally based on Delta3d installer and SceneWorks installer
 ;Written by John Goforth
 
-;;;;;;;;;;;;;;;;; HOW TO RELEASE JECP ;;;;;;;;;;;;;;;;;;
-; 1. Make sure file/dir exclusion list (/x) is up to date in this file.
-; 2. VERSION, and "Name" variable
-; 3. Update #define at top of MainWindow.cpp
-; 4. Check SimCore weathercomponent to see whether time is disabled.
-
 ; Include paths found by CMake
 ; Anything that needs to be installed from our development release
 ; Folders is found using cmake, with the paths written into this header
@@ -29,7 +23,7 @@ SetCompressorDictSize 32
  !endif
  
  !ifndef VERSION
-  !define VERSION '1.6.4' ; ALSO CHANGE VERSION IN MAINWINDOW.CPP !!!!!!
+  !define VERSION '2.0.4' ; ALSO CHANGE VERSION IN MAINWINDOW.CPP !!!!!!
 !endif
 
 
@@ -188,6 +182,8 @@ Section "Shapash Scenario" IAEA
    ; ExecToLog is silent, no console opens up, puts output to our log window
 	;nsExec::ExecToLog '"$EXEDIR\TerrainSFX.exe" x -y'
 
+	MessageBox MB_OK "About to extract scenario data. This may take a few minutes, please wait until finished."
+	
     SetOutPath $INSTDIR
     ;ExecToLog is silent, no console opens up, puts output to our log window
 	nsExec::ExecToLog '"$EXEDIR\ModelSFX.exe" x -y'

@@ -18,3 +18,8 @@ in C:\Qt\4.8.6\mkspecs\win32-msvc2015\qmake.conf:
 QMAKE_CXXFLAGS          = $$QMAKE_CFLAGS /MP
 
 configure -make nmake -platform win32-msvc2015 -prefix C:\Qt\4.8.6 -opensource -confirm-license -opengl desktop -nomake examples -nomake tests
+
+Delta3D - issues building dtDirector?? Try this:
+1. Copy ui/*.ui to src/dtDirectorQt.
+2. Build.
+3. Copy src/dtDirectorQt/ui_*.h to inc/dtDirectorQt/

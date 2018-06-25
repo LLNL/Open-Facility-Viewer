@@ -74,6 +74,8 @@
 #include <dtCore/light.h>
 #include <dtCore/collisionmotionmodel.h>
 
+#include <dtActors/triggervolumeactorproxy.h>
+#include <dtActors/triggervolumeactor.h>
 #include <dtActors/engineactorregistry.h>
 #include <dtActors/gamemeshactor.h>
 #include <dtGame/message.h>
@@ -101,6 +103,8 @@
 #include <QtGui/QMessageBox>
 #include <QtGui/QProgressDialog>
 
+#include <dtActors/weatherenvironmentactor.h>
+#include <dtUtil/datetime.h>
 
 using dtCore::RefPtr;
 
@@ -108,9 +112,13 @@ OFVInputComponent::OFVInputComponent()
 	: dtGame::BaseInputComponent("Input Component"),
 	mInitalizedPlayer(false),
 	mMapLoaded(false),
+	mInteriorMap(false),
 	mTicks(0),
-	mMapWindowSize(osg::Vec2(200.0, 200.0))
+	mMapWindowSize(osg::Vec2(250.0, 250.0)),
+	mReactorBuildingEnabled(true),
+	mFuelFabEnabled(true)
 {
+
 	// Create a progress dialog.
 	mProgressDialog = new QProgressDialog();
 	mProgressDialog->setRange(0, 20);
@@ -124,20 +132,194 @@ OFVInputComponent::OFVInputComponent()
 	mCorrectionSizeY = 5;
 	mCorrectionSizeX = -175;
 
-	mModelRenderDistance["fac_02_int"] = osg::Vec3(-19.7174, 44.5868, 2.8669);
-	mModelRenderDistance["fac_05_int"] = osg::Vec3(37.4893, 3.78602, 4.48165);
-	mModelRenderDistance["fac_06_int"] = osg::Vec3(62.7727, -31.9886, 2.6502);
+	mModelRenderPoint["fac_06"] = osg::Vec3(65.0662, -29.5637, 2.8669);
+	mModelRenderDistance["fac_06"] = 120.0;
+	mModelRenderPoint["fac_04"] = osg::Vec3(65.0662, -29.5637, 2.8669);
+	mModelRenderDistance["fac_04"] = 140.0;
+	mModelRenderPoint["fac_07"] = osg::Vec3(-102.015, 26.4696, 1.55965);  //just the guard at the front.
+	mModelRenderDistance["fac_07"] = 20.0;
+	mModelRenderPoint["switch_guardbooth"] = osg::Vec3(-102.015, 26.4696, 1.55965);  //just the guard at the front.
+	mModelRenderDistance["switch_guardbooth"] = 20.0;
+
+	//Model render point for ACB is far corner by start point so that it doesn't render when at opposite corner.
+	mModelRenderPoint["fac_02"] = osg::Vec3(-68.6675, 67.334, 1.55965); 
+	mModelRenderDistance["fac_02"] = 160.0;
 	
-	mMapDebug = MAP_NO_DEBUG;//MAP_X_DEBUG;
+	mModelRenderPoint["fac_08_cars"] = osg::Vec3(-68.6675, 67.334, 1.55965);  
+	mModelRenderDistance["fac_08_cars"] = 140.0;
+	
+
+
+	//TODO doors
+
+	/******  NAVIGATION MAPS  *****/
+	float reactorBuffer = -1.0;
+	float acbBuffer = 1.0;
+	float fuelFabBuffer = 2.0;
+	const osg::Vec4d beige(0.5, 0.4453125, 0.37109375, 1.0);
+	const osg::Vec4d gray(0.33, 0.33, 0.33, 1.0);
+	
+	mMainMapTexture = loadTexture("Facility_Map.png", beige);
+	
+	
+	const float halfFloorHeight = 1.0;
+
+	const QString abFilename = "AccessBuilding.png";
+	InteriorMap* map = new InteriorMap();
+	
+	map->origin = osg::Vec2(-26.0, 34.75);
+	map->max = osg::Vec2(-10.3, 56.17);
+	float groundLevel = 1.45182;
+	map->renderBox = osg::BoundingBoxd(map->origin.x() - acbBuffer,
+									   map->origin.y() - acbBuffer,
+										groundLevel - halfFloorHeight,
+										map->max.x() + acbBuffer,
+										map->max.y() + acbBuffer,
+										groundLevel + halfFloorHeight);
+
+	map->textureSize = osg::Vec2(556.0, 369.0);
+	map->mapVisible = false;
+	map->texture = loadTexture(abFilename.toStdString(), gray);
+	map->interiorModel = "fac_02_int";
+	mInteriorMaps[abFilename] = map;
+	
+
+	/////////////////// REACTOR BUILDING ////////////////
+	osg::Vec2 reactorTextureSize = osg::Vec2(245.0, 800.0);
+	osg::Vec2 reactorOrigin = osg::Vec2(19.0295, 1.14177);
+	osg::Vec2 reactorMax = osg::Vec2(74.2006, 17.057); 
+
+	float reactorDistance = 30.0;
+
+	for (int i = 0; i < 5; i++)
+	{
+		map = new InteriorMap();
+		float z = -3.42; //basement
+		if (i == 1)
+			z = 1.55;  //ground
+		else if (i == 2)
+			z = 4.62; //1st
+		else if (i == 3)
+			z = 7.28;  //2nd
+		else if (i == 4)
+			z = 9.9; //3rd
+
+	
+		map->distance = reactorDistance;
+		map->origin = reactorOrigin;
+		map->max = reactorMax;
+	
+		map->renderBox = osg::BoundingBoxd( map->origin.x() - reactorBuffer,
+											map->origin.y() - reactorBuffer,
+											z - halfFloorHeight,
+											map->max.x() + reactorBuffer,
+											map->max.y() + reactorBuffer,
+											z + halfFloorHeight);
+
+		map->textureSize = reactorTextureSize;
+		map->mapVisible = false;
+		map->interiorModel = "fac_05_int";
+
+		const QString reactorFilename = "ResearchReactor_" + QString::number(i) + ".png";
+		map->texture = loadTexture(reactorFilename.toStdString(), gray);
+		mInteriorMaps[reactorFilename] = map;
+	}
+
+
+	/////////////////// FUEL FAB BUILDING ////////////////
+	osg::Vec2 fabTextureSize = osg::Vec2(484.0, 385.0);
+	osg::Vec2 fabOrigin = osg::Vec2(58.7341, -41.4878);
+	osg::Vec2 fabMax = osg::Vec2(75.0433, -21.19074);	
+
+	float fabricationDistance = 10.0;
+
+	for (int i = 0; i < 3; i++)
+	{
+		map = new InteriorMap();
+		float z = -1.84;
+		if (i == 1)
+			z = 1.54;
+		else if (i == 2)
+			z = 7.14;
+
+		
+		map->distance = fabricationDistance;
+		map->origin = fabOrigin;
+		map->max = fabMax;
+		
+		map->renderBox = osg::BoundingBoxd(map->origin.x() - fuelFabBuffer,
+											map->origin.y() - fuelFabBuffer,
+											z - halfFloorHeight,
+											map->max.x() + fuelFabBuffer,
+											map->max.y() + fuelFabBuffer,
+											z + halfFloorHeight);
+
+		map->textureSize = fabTextureSize;
+		map->mapVisible = false;
+		map->interiorModel = "fac_06_int";
+
+		const QString fabFilename = "FabricationBuilding_" + QString::number(i) + ".png";
+		map->texture = loadTexture(fabFilename.toStdString(), gray);
+		mInteriorMaps[fabFilename] = map;
+	}
+
+	//////////////////// STORAGE BUNKER /////////////////////
+	map = new InteriorMap();
+
+	map->distance = 7.0;
+	map->origin = osg::Vec2(80.509, 45.809);
+	map->max = osg::Vec2(93.1563, 62.157);
+
+	map->renderBox = osg::BoundingBoxd(map->origin.x() - reactorBuffer,
+										map->origin.y() - reactorBuffer,
+										groundLevel - halfFloorHeight,
+										map->max.x() + reactorBuffer,
+										map->max.y() + reactorBuffer,
+										groundLevel + halfFloorHeight);
+
+
+	map->textureSize = osg::Vec2(600.0, 485.0);
+	map->mapVisible = false;
+
+
+	const QString bunkerFilename = "StorageBunker.png";
+	map->texture = loadTexture(bunkerFilename.toStdString(), gray);
+	mInteriorMaps[bunkerFilename] = map;
+
+
+	//add the bounding box for the basement (ignore z elevation.)
+
+	//Fuel Fab Basement
+	mElevationLimitBoxes.push_back(osg::BoundingBoxd(55.3477, -43.0503, -100000.0, 74.1745, -25.5124, 100000.0));
+	mElevationLimits.push_back(-1.85);
+
+	//Fuel Fab Ramp
+	mElevationLimitBoxes.push_back(osg::BoundingBoxd(41.062, -38.0, -100000.0, 58.6752, -31.0, 100000.0));
+	mElevationLimits.push_back(-1.85);
+	
+	//Reactor Basement
+	mElevationLimitBoxes.push_back(osg::BoundingBoxd(25.8509, 2.85, -100000.0, 74.1745, 15.34, 100000.0));
+	mElevationLimits.push_back(-4.53);
+	
+	mGlobalElevationLimit = 1.0;
+
+	mMapDebug = MAP_NO_DEBUG;//;
+
+
 }
 
 OFVInputComponent::~OFVInputComponent()
 {
+	/*QMap<QString, InteriorMap*>::const_iterator i = mInteriorMaps.constBegin();
+	while (i != mInteriorMaps.constEnd()) {
+		delete i.value();
+	}*/
 }
 
 
 
 ///////////////////////////////////////////////////////////////////////////
+
 void OFVInputComponent::ProcessMessage(const dtGame::Message& message)
 {
 	const dtGame::MessageType& msgType = message.GetMessageType();
@@ -152,12 +334,44 @@ void OFVInputComponent::ProcessMessage(const dtGame::Message& message)
 			{
 				//std::cout << "Updating map \n";
 				updateMap();
+				fixTimeZone();
+				
+				
+
 				//std::cout << "Done.\n";
 			}
 			mTicks++;
-			if (mTicks > 20)
+			if (mTicks < 20)
+			{
+				//cycle through the interiors and preload each one 
+				if (mTicks == 6)
+				{
+					std::cout << "Loading interior fac_02_int\n";
+					setActorVisible("fac_02_int", true);
+				}
+				else if (mTicks == 8)
+				{
+					std::cout << "Loading interior fac_05_int\n";
+					setActorVisible("fac_02_int", false);
+					setActorVisible("fac_05_int", true);
+				}
+				else if (mTicks == 10)
+				{
+					std::cout << "Loading interior fac_06_int\n";
+					setActorVisible("fac_05_int", false);
+					setActorVisible("fac_06_int", true);
+				}
+				else if (mTicks == 12)
+				{
+					setActorVisible("fac_06_int", false);
+				}
+			}
+			else if (mTicks > 20)
 			{
 				
+				
+
+
 				mInitalizedPlayer = true;
 			//	std::cout << "Switching motion models \n";
 				switchMotionModels();
@@ -171,18 +385,22 @@ void OFVInputComponent::ProcessMessage(const dtGame::Message& message)
 		else
 		{
 			mTicks++;
-			if (mTicks > 2)
+			if (mTicks % 2)
+			{
+				
+				checkVisibilitys();
+				updateMap();
+				checkPlayerElevation();
+			}
+			if (mTicks % 5)
+			{
+				updateModelDistanceVisibility();
+				checkWindowSizeChanged();
+			}
+			
+			if (mTicks > 10)
 			{
 				mTicks = 0;
-			//	std::cout << "Updating map \n";
-				updateMap();
-				//std::cout << "Done.\n";
-				//std::cout << "Check model visibility\n";
-				checkModelVisibility();
-				//std::cout << "Done.\n";
-				//std::cout << "checkWindowSizeChanged \n";
-				checkWindowSizeChanged();
-			//	std::cout << "Done.\n";
 			}
 		}
 
@@ -289,38 +507,44 @@ void OFVInputComponent::ProcessMessage(const dtGame::Message& message)
 	
 		GetGameManager()->SetPaused(false);
 
-		
+
 
 		
-
-		//turn off arrow models.
-		setActorVisible("arrow_01", false);
-		setActorVisible("arrow_02", false);
-		setActorVisible("arrow_03", false);
-		setActorVisible("arrow_04", false);
-		setActorVisible("arrow_05", false);
-		setActorVisible("arrow_06", false);
-		setActorVisible("arrow_07", false);
-		setActorVisible("arrow_08", false);
-		setActorVisible("arrow_09", false);
-		setActorVisible("arrow_10", false);
-
-		setActorVisible("fac_10", false);
 		setActorVisible("acbArrows", false);
+
 		setActorVisible("Colliders", false); 
-		setActorVisible("ColliderFence", false);
-		setActorVisible("CollidersOuterFence", false);
+		setActorVisible("Colliders_fac_05_OFF", false);
+		setActorVisible("Colliders_fac_05_ON", false);
+		setActorVisible("Colliders_fac_06_OFF", false);
+		setActorVisible("Colliders_fac_06_ON", false);
+		setActorVisible("Colliders_guard_tower", false);
+		
+		setActorVisible("Colliders_fence_admin", false);
+		setActorVisible("Colliders_fence_inner", false);
+		setActorVisible("Colliders_fence_outer", false);
+		setActorVisible("Colliders_fence_scrapyard", false);
+
+
 		setActorVisible("CollidersFlyBox", false);
 
-		/*setActorVisible("fac_02", false);
+		setActorVisible("switch_ground_fab_OFF", false);
+		setActorVisible("switch_ground_reactor_OFF", false);
+
+		setActorVisible("switch_microwave_nolights", false);
+		
+		
 		setActorVisible("fac_02_int", false);
 		setActorVisible("fac_05_int", false);
 		setActorVisible("fac_06_int", false);
-		*/
+		
 		switchMotionModels();
 		teleportToPlayerStart();
 
-		mHumanMotionModel->setCollsionBits(0x00000060);
+		//reset collision to be everything.  (Set actor visible change it.)
+		mHumanMotionModel->setCollsionBits(COLLISION_CATEGORY_BIT_FAC_05_ON |
+										   COLLISION_CATEGORY_BIT_FAC_06_ON | 
+										   COLLISION_CATEGORY_BIT_FENCE_INNER |
+											COLLISION_CATEGORY_BIT_OBJECT);
 
 
 		createHUD();
@@ -360,41 +584,230 @@ void OFVInputComponent::checkWindowSizeChanged()
 	}
 
 }
-void OFVInputComponent::checkModelVisibility()
+
+//called only when going in or out of building or floor.
+void OFVInputComponent::updateModelVisibility()
+{
+	
+
+	//set all false
+	{
+		QMap<QString, InteriorMap*>::const_iterator i = mInteriorMaps.constBegin();
+		while (i != mInteriorMaps.constEnd()) {
+			setActorVisible(i.value()->interiorModel.toStdString(), false);
+			++i;
+		}
+	}
+	//set only one visible model ON, since there are floors we have duplicate models.
+	QMap<QString, InteriorMap*>::const_iterator i = mInteriorMaps.constBegin();
+	while (i != mInteriorMaps.constEnd()) {
+		if (i.value()->mapVisible)
+		{
+
+			//Override visibilty when model building is turned off.
+			if (i.value()->interiorModel == "fac_05_int" && !mReactorBuildingEnabled)
+				break;
+			if (i.value()->interiorModel == "fac_06_int" && !mFuelFabEnabled)
+				break;
+
+			setActorVisible(i.value()->interiorModel.toStdString(), true);
+			break;
+		}
+		++i;
+	}
+
+
+	//turn on/off all outdoor models.
+	setActorVisible("trees_01", !mInteriorMap);
+	setActorVisible("foliage", !mInteriorMap);
+
+	//these should be permanently on (not switchable.)
+	setActorVisible("switch_lighting_admin", !mInteriorMap);
+	setActorVisible("switch_fence_admin", !mInteriorMap);
+	setActorVisible("switch_admin_bldgs", !mInteriorMap);
+	setActorVisible("switch_waste_outer", !mInteriorMap);
+	//setActorVisible("switch_waste_inner", !mInteriorMap);
+	//setActorVisible("fac_fence_scrapyardWaste", !mInteriorMap);
+
+	
+
+
+}
+void OFVInputComponent::updateModelDistanceVisibility()
 {
 
 	dtCore::Transform xform;
 	mPlayerActor->GetTransform(xform);
 	osg::Vec3 trans = xform.GetTranslation();
 
-	QMap<QString, osg::Vec3>::const_iterator i = mModelRenderDistance.constBegin();
-	while (i != mModelRenderDistance.constEnd()) {
-		osg::Vec3 pos = i.value();
-		QLineF dist(pos.x(), pos.y(), trans.x(), trans.y());
-		setActorVisible(i.key().toStdString(), dist.length() < 35.0);
+
+	QMap<QString, osg::Vec3>::const_iterator i = mModelRenderPoint.constBegin();
+	while (i != mModelRenderPoint.constEnd()) {
+
+		if (i.key() == "fac_06" && !mFuelFabEnabled)
+		{
+			//do nothing
+		}
+		else if (i.key() == "fac_05" && !mReactorBuildingEnabled)
+		{
+			//do nothing
+		}
+		else if (mFlyMM->IsEnabled())
+		{
+			setActorVisible(i.key().toStdString(), true);
+		}
+		else
+		{
+			osg::Vec3 pos = i.value();
+			QLineF dist(pos.x(), pos.y(), trans.x(), trans.y());
+			setActorVisible(i.key().toStdString(), dist.length() < mModelRenderDistance[i.key()]);
+		}
+		++i;
+	}
+}
+void OFVInputComponent::setVisibilityAllInteriorMaps(bool visible)
+{
+	QMap<QString, InteriorMap*>::const_iterator i = mInteriorMaps.constBegin();
+	while (i != mInteriorMaps.constEnd()) {
+		if (i.value()->mapVisible)
+		{
+			i.value()->mapVisible = visible;
+			
+		}
+		++i;
+	}
+}
+void OFVInputComponent::updateMapVisibility(osg::Vec3 trans)
+{
+
+	QMap<QString, InteriorMap*>::const_iterator i = mInteriorMaps.constBegin();
+	while (i != mInteriorMaps.constEnd()) {
+
+		//we are in a building
+		if (i.value()->renderBox.contains(trans))
+		{
+			if (  (i.value()->interiorModel == "fac_05_int" && !mReactorBuildingEnabled) ||
+				  (i.value()->interiorModel == "fac_06_int" && !mFuelFabEnabled))
+			{
+				setVisibilityAllInteriorMaps(false);
+				mInteriorMap = false;
+				break;
+			}
+			//check if map is already correct.
+			if (i.value()->mapVisible)
+				return;
+
+			//change map to current floor.
+			setVisibilityAllInteriorMaps(false);
+			i.value()->mapVisible = true;
+			updateMapWithNewTexture(i.value()->texture, mMapGeode);
+			mInteriorMap = true;
+
+			//Set model visibility
+			updateModelVisibility();
+			
+			return;
+		}
 	
 		++i;
 	}
+	//Check if we are still showing an interior map and shouldn't be.
+	if (mInteriorMap)
+	{
+		setVisibilityAllInteriorMaps(false);
+		updateMapWithNewTexture(mMainMapTexture, mMapGeode);
+		mInteriorMap = false;
 
+		//Set model visibility
+		updateModelVisibility();
+		
+	}
+}
+void OFVInputComponent::checkVisibilitys()
+{
+
+	dtCore::Transform xform;
+	mPlayerActor->GetTransform(xform);
+	osg::Vec3 trans = xform.GetTranslation();
+
+	updateMapVisibility(trans);
+	
+
+}
+void OFVInputComponent::checkPlayerElevation()
+{
+
+	if (mHumanMotionModel->collisionEnabled() == false)
+		return;
+
+	dtCore::Transform xform;
+	mPlayerActor->GetTransform(xform);
+	osg::Vec3 trans = xform.GetTranslation();
+
+	//check special cases (basements)
+	for (int i = 0; i < mElevationLimitBoxes.size(); i++)
+	{
+		if (mElevationLimitBoxes.at(i).contains(trans))
+		{
+			if (trans.z() < mElevationLimits.at(i))
+			{
+				trans.z() = mElevationLimits.at(i);
+				xform.SetTranslation(trans);
+				mPlayerActor->SetTransform(xform);
+			}
+			return; //we are in a special case so return, don't do global.
+		}
+	}
+
+
+	//check global limit
+	if (trans.z() < mGlobalElevationLimit)
+	{
+		trans.z() = mGlobalElevationLimit;
+		xform.SetTranslation(trans);
+		mPlayerActor->SetTransform(xform);
+		
+	}
 
 }
 void OFVInputComponent::updateMap()
 {
 	osg::Vec2 mapSize(2048.0, 2048.0);
 	
+	
 	dtCore::Transform xform;
 	mPlayerActor->GetTransform(xform);
 	osg::Vec3 trans = xform.GetTranslation();
 
-	
+	//Facility map	
 	osg::Vec2 origin(-113.237, -240.621);
 	osg::Vec2 max(124.203, 183.679);
 
+	//Interior Map - use special offsets
+	if (mInteriorMap)
+	{
+
+
+		QMap<QString, InteriorMap*>::const_iterator i = mInteriorMaps.constBegin();
+		while (i != mInteriorMaps.constEnd()) {	
+			if (i.value()->mapVisible)
+			{
+				mapSize = i.value()->textureSize;
+				origin = i.value()->origin;
+				max = i.value()->max;
+			}
+			++i;
+		}
+	}
+
+
 	osg::Vec2 size = max - origin;
-	
-	size.x() += mCorrectionSizeY;
-	size.y() += mCorrectionSizeX; //reversed X and Y 
-	
+	if (!mInteriorMap)
+	{
+		size.x() += mCorrectionSizeY;
+		size.y() += mCorrectionSizeX; //reversed X and Y 
+	}
+
 	//create transform based on mapsize
 	osg::Vec2 posToMap(mapSize.x() / size.x(), mapSize.y() / size.y());
 
@@ -462,6 +875,8 @@ void OFVInputComponent::createHUD()
 	osgViewer::GraphicsWindow::Views views;
 	window->GetOsgViewerGraphicsWindow()->getViews(views);
 	views.front()->addSlave(mHUD, false);
+
+
 }
 void OFVInputComponent::createMiniMap()
 {
@@ -475,8 +890,8 @@ void OFVInputComponent::createMiniMap()
 	maptrans->setPosition(osg::Vec3(mMapWindowSize.x() / 2.0, mMapWindowSize.y() / 2.0, 0.0));
 	maptrans->setScale(osg::Vec3(scaleFactor, scaleFactor, scaleFactor));
 
-
-	mMapGeode = loadOSGImage("Facility_Map.png", osg::Vec2(0, 0),  mMapWindowSize);
+	const osg::Vec4d beige(0.5, 0.4453125, 0.37109375, 1.0);
+	mMapGeode = loadOSGImage("Facility_Map.png", osg::Vec2(0, 0),  mMapWindowSize, beige);
 	maptrans->addChild(mMapGeode);
 
 	mHUD->addChild(maptrans);
@@ -487,11 +902,21 @@ void OFVInputComponent::createMiniMap()
 	dottrans->setScale(osg::Vec3(scaleFactor, scaleFactor, scaleFactor));
 	mDot = loadOSGImage("dot.png", osg::Vec2(0, 0), osg::Vec2(9,9));
 	mDot->getOrCreateStateSet()->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
+	mDot->getOrCreateStateSet()->setMode(GL_BLEND, osg::StateAttribute::ON);
 	dottrans->addChild(mDot);
-	mHUD->addChild(dottrans);
 
+	osg::ref_ptr<osg::PositionAttitudeTransform> arrowtrans = new osg::PositionAttitudeTransform();
+	arrowtrans->setPosition(osg::Vec3(mMapWindowSize.x() - 20 , mMapWindowSize.y() - 30 , 0.0));
+	arrowtrans->setScale(osg::Vec3(scaleFactor, scaleFactor, scaleFactor));
+	mArrow = loadOSGImage("arrow.png", osg::Vec2(0, 0), osg::Vec2(30,44));
+	mArrow->getOrCreateStateSet()->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
+	mArrow->getOrCreateStateSet()->setMode(GL_BLEND, osg::StateAttribute::ON);
+	arrowtrans->addChild(mArrow);
+
+	mHUD->addChild(dottrans);
+	mHUD->addChild(arrowtrans);
 }
-osg::Texture2D* OFVInputComponent::loadTexture(const std::string& path)
+osg::Texture2D* OFVInputComponent::loadTexture(const std::string& path, const osg::Vec4d& borderColor)
 {
 	osg::Image *im = NULL;
 	
@@ -515,13 +940,35 @@ osg::Texture2D* OFVInputComponent::loadTexture(const std::string& path)
 	txtr->setImage(im);
 	txtr->setWrap(osg::Texture2D::WRAP_S, osg::Texture2D::CLAMP_TO_BORDER);
 	txtr->setWrap(osg::Texture2D::WRAP_T, osg::Texture2D::CLAMP_TO_BORDER);
-
+	txtr->setBorderColor(borderColor);
 	return txtr;
 }
+void OFVInputComponent::updateMapWithNewTexture(osg::Texture2D* tex,
+										        osg::Geode* mapQuad)
+{
+	
 
+	
+	//int imagewidth;
+	//int imageheight;
+	if (!tex)
+	{
+		std::cout << "ERROR: could not apply texture\n";
+
+	}
+	else
+	{
+		osg::StateSet* frontSS = mapQuad->getOrCreateStateSet();
+		frontSS->setTextureAttributeAndModes(0, tex, osg::StateAttribute::ON);
+		//imagewidth = tex->getImage()->s();
+		//imageheight = tex->getImage()->t();
+		//std::cout << "Detected image width as " << imagewidth << "\n";
+	}
+}
 osg::Geode* OFVInputComponent::loadOSGImage(std::string textureFile,
 											osg::Vec2 textureOffset,
-											osg::Vec2 textureSize)
+											osg::Vec2 textureSize,
+											const osg::Vec4d& borderColor)
 {
 
 	osg::Geode* frontQuad = new osg::Geode();
@@ -538,7 +985,7 @@ osg::Geode* OFVInputComponent::loadOSGImage(std::string textureFile,
 
 	frontSS->setMode(GL_DEPTH_TEST, osg::StateAttribute::OFF);
 
-	osg::Texture2D* tex = loadTexture(textureFile);
+	osg::Texture2D* tex = loadTexture(textureFile, borderColor);
 
 	int imagewidth;
 	int imageheight;
@@ -656,9 +1103,11 @@ void OFVInputComponent::applyTextureOffset(osg::Geode* geode,
 	dx -= xMax / 2.0;
 	dy -= yMax / 2.0;	
 
-	dx += mCorrectionX;
-	dy += mCorrectionY;
-
+	if (!mInteriorMap)
+	{
+		dx += mCorrectionX;
+		dy += mCorrectionY;
+	}
 	(*quadTexCoords)[0].set((0.0f + dx) - zoom, (yMax + dy) + zoom);
 	(*quadTexCoords)[1].set((0.0f + dx) - zoom, (0.0f + dy) - zoom);
 	(*quadTexCoords)[2].set((xMax + dx) + zoom, (0.0f + dy) - zoom);
@@ -680,6 +1129,29 @@ void OFVInputComponent::printPlayerLocation()
 	std::cout << "Player Rotation " << rot.x() << "," << rot.y() << "," << rot.z() << "\n";
 
 }
+void OFVInputComponent::fixTimeZone()
+{
+	
+	std::vector<dtCore::ActorProxy*> actors;
+	const dtCore::ActorType *type = GetGameManager()->FindActorType("dtcore.Environment", "WeatherEnvironment");
+	GetGameManager()->FindActorsByType(*type, actors);
+	RefPtr<dtActors::WeatherEnvironmentActor> proxy = NULL;
+	if (actors.empty())
+	{
+		LOG_ERROR("Failed to find a weather proxy in the map.");
+	}
+	else
+	{
+		proxy = dynamic_cast<dtActors::WeatherEnvironmentActor*>(actors[0]->GetActor());
+		unsigned year, month, day, hour, min, sec;
+		proxy->GetTimeAndDate(year, month, day, hour, min, sec);
+		dtUtil::DateTime* date = new dtUtil::DateTime();
+		date->SetTime(year, month, day, hour, min, sec);
+		date->AdjustTimeZone(dtUtil::DateTime::GetLocalGMTOffset(true));
+		date->GetTime(year, month, day, hour, min, sec);
+		proxy->SetTimeAndDate(year, month, day, hour, min, sec);
+	}
+}
 void OFVInputComponent::teleportToPlayerStart()
 {
 	std::vector<dtCore::ActorProxy*> actors;
@@ -695,16 +1167,43 @@ void OFVInputComponent::teleportToPlayerStart()
 		proxy = dynamic_cast<dtCore::TransformableActorProxy*>(actors[0]);
 		osg::Vec3 startPos = proxy->GetTranslation();
 		osg::Vec3 startRot = proxy->GetRotation();
-		dtCore::Transform stealthStart; 
-	
+		dtCore::Transform stealthStart;
+
 		stealthStart.SetTranslation(startPos.x(), startPos.y(), startPos.z());
 		stealthStart.SetRotation(startRot);
 		std::cout << "setting player location to " << startPos.x() << "," << startPos.y() << "," << startPos.z() << "\n";
 		mPlayerActor->SetTransform(stealthStart);
 
-	//	dtCore::Camera& cam = *(GetGameManager()->GetApplication().GetCamera());
-	//	cam.SetTransform(stealthStart);
+		//	dtCore::Camera& cam = *(GetGameManager()->GetApplication().GetCamera());
+		//	cam.SetTransform(stealthStart);
 	}
+}
+void OFVInputComponent::setTeleportActive(std::string actorName, bool active)
+{
+
+	if (actorName == "")
+		return;
+
+	
+	dtCore::ActorProxy* actorp;
+	GetGameManager()->FindActorByName(actorName, actorp);
+
+	if (actorp == NULL)
+	{
+		LOG_WARNING("Failed to find actor " + actorName + " in map.");
+		return;
+	}
+	RefPtr<dtActors::TriggerVolumeActorProxy> proxy = NULL;
+	proxy = dynamic_cast<dtActors::TriggerVolumeActorProxy*>(actorp);
+	if (proxy == NULL)
+	{
+		LOG_WARNING("Failed to convert actor " + actorName + " in map.");
+		return;
+	}
+	if(active)
+		proxy->SetCollisionType(dtCore::CollisionGeomType::CUBE);
+	else
+		proxy->SetCollisionType(dtCore::CollisionGeomType::NONE);
 }
 void OFVInputComponent::jumpTo(double x, double y, double z, double h, double p, double r)
 {
@@ -717,11 +1216,14 @@ void OFVInputComponent::jumpTo(double x, double y, double z, double h, double p,
 }
 void OFVInputComponent::setActorVisible(std::string actorName, bool visible)
 {
+	if (actorName == "")
+		return;
+
 	if (actorName == "navigation_map_OFV_STRING")
 	{
 		mDot->setNodeMask(visible ? 0xffffffff : 0x0);
 		mMapGeode->setNodeMask(visible ? 0xffffffff : 0x0);
-		
+		mArrow->setNodeMask(visible ? 0xffffffff : 0x0);
 		return;
 	}
 
@@ -730,24 +1232,73 @@ void OFVInputComponent::setActorVisible(std::string actorName, bool visible)
 	
 	if (actor == NULL)
 	{
-		LOG_WARNING("Failed to find actor in map.");
+		LOG_WARNING("Failed to find actor " + actorName + " in map.");
+		return;
+	}
+
+	QString name = actorName.c_str();
+	
+
+	dtCore::DeltaDrawable* drawable =
+		static_cast<dtCore::DeltaDrawable*>(actor->GetActor());
+	if (name.startsWith("Colliders"))
+	{
+		unsigned long currentbits = mHumanMotionModel->getCollsionBits();
+		unsigned long collider;
+		if (actorName == "Colliders_fence_inner")
+		{
+			collider = COLLISION_CATEGORY_BIT_FENCE_INNER;
+		}
+		else if (actorName == "Colliders_fac_06_OFF")
+		{
+			collider = COLLISION_CATEGORY_BIT_FAC_06_OFF;
+		}
+		else if (actorName == "Colliders_fac_06_ON")
+		{
+			collider = COLLISION_CATEGORY_BIT_FAC_06_ON;
+		}
+		else if (actorName == "Colliders_fac_05_OFF")
+		{
+			collider = COLLISION_CATEGORY_BIT_FAC_05_OFF;
+		}
+		else if (actorName == "Colliders_fac_05_ON")
+		{
+			collider = COLLISION_CATEGORY_BIT_FAC_05_ON;
+		}
+		else if (actorName == "Colliders_guard_tower")
+		{
+			collider = COLLISION_CATEGORY_BIT_GUARDTOWERS;
+		}
+
+		if (visible)
+			mHumanMotionModel->setCollsionBits(currentbits | collider);//collide 
+		else
+			mHumanMotionModel->setCollsionBits(currentbits & ~(collider));//don't collide
+
+
+		drawable->SetActive(false);
 	}
 	else
 	{
-		dtCore::DeltaDrawable* drawable =
-			static_cast<dtCore::DeltaDrawable*>(actor->GetActor());
-
 		drawable->SetActive(visible);
+	}
 		
-	}
+	
 
-	if (actorName == "fac1_fence")
-	{
-		if (visible)
-			mHumanMotionModel->setCollsionBits(0x00000060);//collide with inner fence
-		else
-			mHumanMotionModel->setCollsionBits(0x00000020);//don't collide with inner fence.
-	}
+	
+}
+void OFVInputComponent::setActorVisibleOverride(std::string actorName, bool visible)
+{
+	if (actorName == "")
+		return;
+
+	if (actorName == "fac_05")
+		mReactorBuildingEnabled = visible;
+	else if (actorName == "fac_06")
+		mFuelFabEnabled = visible;
+
+	setActorVisible(actorName, visible);
+
 }
 dtCore::Transformable* OFVInputComponent::getActorTransformable(std::string actorName)
 {
@@ -853,7 +1404,7 @@ void OFVInputComponent::multiplyTurnModelSpeed(float factor)
 
 		float val = mHumanMotionModel->GetMaximumTurnSpeed();
 		mHumanMotionModel->SetMaximumTurnSpeed(val * factor);
-		std::cout << "Walk speed set to " << (val * factor) << "\n";
+		std::cout << "Turn speed set to " << (val * factor) << "\n";
 
 	}
 
@@ -958,8 +1509,12 @@ bool OFVInputComponent::HandleKeyPressed(const dtCore::Keyboard* keyboard, int k
 		
 		break;
 	case 'z':
-	case '1':
 		printPlayerLocation();
+		break;
+
+	case '\\':
+		
+		GetGameManager()->GetApplication().SetNextStatisticsType();
 		break;
 
 	default:

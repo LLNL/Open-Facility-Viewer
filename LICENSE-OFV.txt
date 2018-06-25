@@ -1,6 +1,6 @@
 Open Facility Viewer, an application for 3D walk-throughs of facilities
 
-Copyright (C) 2016, Lawrence Livermore National Security, LLC.
+Copyright (C) 2018, Lawrence Livermore National Security, LLC.
 
 Produced at the Lawrence Livermore National Laboratory.
 

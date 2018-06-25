@@ -51,26 +51,23 @@
      <property name="title">
       <string>Nuclear Material Flow</string>
      </property>
-     <addaction name="actionFuel_Assemblies"/>
-     <addaction name="actionHot_Waste"/>
-     <addaction name="actionIrradiated_Fuel_Pins"/>
-     <addaction name="actionLiquid_Effluent"/>
-     <addaction name="actionExperimental_Materials"/>
-     <addaction name="actionNuclear_Waste_Drums"/>
-     <addaction name="actionResearch_Waste"/>
-     <addaction name="actionSolid_Waste"/>
-     <addaction name="actionUranium_Oxide_Powders"/>
-     <addaction name="actionUranium_Samples"/>
-     <addaction name="separator"/>
-     <addaction name="actionAll"/>
-     <addaction name="actionAll_Off"/>
+     <addaction name="actionAllMaterials"/>
+     <addaction name="actionTargets"/>
+     <addaction name="actionFreshFuel"/>
+     <addaction name="actionOxides"/>
+     <addaction name="actionWaste"/>
     </widget>
     <addaction name="menuNuclear_Material_Flow"/>
-    <addaction name="actionFlying_Arrows"/>
     <addaction name="actionACB_Flow_Arrows"/>
     <addaction name="actionBuilding_Signs"/>
     <addaction name="actionSecurity_Signs"/>
-    <addaction name="actionTowers_and_Fence"/>
+    <addaction name="actionPerimeter_Lighting"/>
+    <addaction name="actionInner_Protected_Area_Fence"/>
+    <addaction name="actionVehicle_Radiation_Portal_Monitors"/>
+    <addaction name="actionMicrowave_Sensors"/>
+    <addaction name="actionReactor_Building"/>
+    <addaction name="actionFuel_Fabrication_Building"/>
+    <addaction name="actionGuard_Towers"/>
     <addaction name="separator"/>
     <addaction name="actionNavigation_Map"/>
    </widget>
@@ -277,20 +274,20 @@
     <string>Navigation Map</string>
    </property>
   </action>
-  <action name="actionFuel_Assemblies">
+  <action name="actionAllMaterials">
    <property name="checkable">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <property name="text">
-    <string>Fuel Assemblies</string>
+    <string>All Materials</string>
    </property>
   </action>
-  <action name="actionHot_Waste">
+  <action name="actionTargets">
    <property name="checkable">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <property name="text">
-    <string>Hot Waste</string>
+    <string>Targets</string>
    </property>
   </action>
   <action name="actionIrradiated_Fuel_Pins">
@@ -325,28 +322,28 @@
     <string>Nuclear Waste Drums</string>
    </property>
   </action>
-  <action name="actionResearch_Waste">
+  <action name="actionFreshFuel">
    <property name="checkable">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <property name="text">
-    <string>Research Waste</string>
+    <string>Fresh Fuel</string>
    </property>
   </action>
-  <action name="actionSolid_Waste">
+  <action name="actionWaste">
    <property name="checkable">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <property name="text">
-    <string>Solid Waste</string>
+    <string>Waste</string>
    </property>
   </action>
-  <action name="actionUranium_Oxide_Powders">
+  <action name="actionOxides">
    <property name="checkable">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <property name="text">
-    <string>Uranium Oxide Powders</string>
+    <string>Oxides</string>
    </property>
   </action>
   <action name="actionUranium_Samples">
@@ -376,6 +373,83 @@
    </property>
    <property name="text">
     <string>ACB Flow Arrows</string>
+   </property>
+  </action>
+  <action name="actionPerimeter_Lighting">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Perimeter Lighting</string>
+   </property>
+  </action>
+  <action name="actionInner_Protected_Area_Fence">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Inner Protected Area Fence</string>
+   </property>
+  </action>
+  <action name="actionVehicle_Radiation_Portal_Monitors">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Vehicle Radiation Portal Monitors</string>
+   </property>
+  </action>
+  <action name="actionMicrowave_Sensors">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Microwave Sensors</string>
+   </property>
+  </action>
+  <action name="actionReactor_Building">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Reactor Building</string>
+   </property>
+  </action>
+  <action name="actionFuel_Fabrication_Building">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Fuel Fabrication Building</string>
+   </property>
+  </action>
+  <action name="actionGuard_Towers">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Guard Towers</string>
    </property>
   </action>
  </widget>
